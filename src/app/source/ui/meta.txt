@@ -1,0 +1,76 @@
+-- top
+bias 16
+slaves 16
+cache_size 16
+refresh 20
+airplay 20
+
+-- grid
+camera 12
+tag 12
+inspect 30
+connect_none 50 #784646
+connect_close 50 base
+connect_stdby 50 midlight
+
+-- parm
+gain 22
+gamma 22
+exposuretime 22
+wb 22
+
+-- play
+pause 23
+play 23
+next 23
+previous 23
+clipleft 23
+clipright 23
+clipleft_hl 23
+clipright_hl 23
+play_hl 23 
+next_hl 23
+previous_hl 23
+pause_hl 23
+
+-- live
+record 32 highlight
+record_red 32 #ff1c1c
+serial 30
+focus 30
+calibrate 30
+serial_hl 30
+focus_hl 30
+calibrate_hl 30
+
+-- roll
+submit 36 highlight
+cache 30
+crop 30
+save 30
+cache_hl 30
+crop_hl 30
+save_hl 30
+
+-- 3d
+export 36 highlight
+wireframe 30
+rig 30
+wireframe_hl 30
+rig_hl 30
+
+-- project list
+resolve 18
+poses 18
+length 18
+shots 18
+load 18
+size 18
+
+-- sidebar
+add 16
+add_hl 16
+state_1 8 #C8C569
+state_2 8 #69BBC8
+state_3 8 #6FC869
+state_4 8 #C86969

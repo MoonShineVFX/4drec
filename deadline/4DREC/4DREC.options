@@ -1,0 +1,31 @@
+[InputFile]
+Type=filename
+Label=Input File
+Category=Input
+Index=0
+Required=false
+DisableIfBlank=true
+
+[InputArgs]
+Type=string
+Label=Input Arguments
+Category=Input
+Index=1
+Required=false
+DisableIfBlank=true
+
+[OutputFile]
+Type=filenamesave
+Label=Output File
+Category=Output
+Index=0
+Required=false
+DisableIfBlank=true
+
+[OutputArgs]
+Type=string
+Label=Output Arguments
+Category=Output
+Index=1
+Required=false
+DisableIfBlank=true

@@ -1,0 +1,79 @@
+html, body, .preview {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+div.preview {
+    background-color: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+div.control {
+    position: absolute;
+    color: white;
+    left: 16px;
+    top: 16px;
+    font-size: 16px;
+    z-index: 10;
+}
+
+div.control > *:not(:first-child) {
+    margin-top: 16px;
+}
+
+@media screen and (orientation: landscape) {
+    :root {
+        --iw: 119.53vh;
+        --ih: 100vh;
+    }
+}
+
+@media screen and (orientation: portrait) {
+    :root {
+        --iw: 100vw;
+        --ih: 83.66vw;
+    }
+}
+
+div.frame {
+    width: var(--iw);
+    height: var(--ih);
+    position: relative;
+}
+
+img {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+}
+
+div.overlay {
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    visibility: hidden;
+}
+
+div.shape {
+    border: 2px solid cyan;
+    border-radius: 50%;
+    width: 66.92%;
+    height: 80%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+div.center {
+    border: 1px solid cyan;
+    border-radius: 50%;
+    width: 6%;
+    height: 6%;
+}

@@ -1,0 +1,12 @@
+jpeg:
+
+  live_view:
+    quality: 70
+    scale_length: 100
+
+  shot:
+    quality: 85
+    scale_length: 200
+
+  submit:
+    quality: 90

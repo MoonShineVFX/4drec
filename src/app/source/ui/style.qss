@@ -1,0 +1,81 @@
+/* Global */
+
+QMenu {
+  font-size: 14px;
+  padding: 8px 0px;
+}
+
+QMenu::item {
+  margin: 8px 14px;
+}
+
+QMenu::item:selected {
+  color: palette(highlight);
+  background-color: transparent;
+}
+
+QSlider {
+  height: 30px;
+}
+
+QSlider::groove {
+  border: none;
+  height: 8px;
+  border-radius: 5px;
+}
+
+QSlider::handle {
+  background-color: palette(window-text);
+  border-radius: 2px;
+  width: 8px;
+  margin: -8px 0px;
+}
+
+QSlider::handle:hover {
+  background: palette(light);
+}
+
+QSlider::add-page {
+  background: palette(base);
+  border-radius: 4px;
+}
+
+QSlider::sub-page {
+  background: palette(midlight);
+  border-radius: 4px;
+}
+
+QScrollBar:vertical {
+  background: transparent;
+  width: 8px;
+  margin: 0px;
+}
+
+QScrollBar::handle:vertical {
+  background-color: palette(alternate-base);
+  border-radius: 2px;
+}
+
+QScrollBar::handle:vertical:hover {
+  background-color: palette(base);
+}
+
+QScrollBar::add-line:vertical {
+  background: none;
+  height: 0px;
+}
+
+QScrollBar::sub-line:vertical {
+  background: none;
+  height: 0px;
+}
+
+/* Footer */
+#BalanceRatioRed::sub-page {
+  background-color: #DB2A71;
+}
+
+#BalanceRatioBlue::sub-page {
+  background-color: #5EB861;
+}
+

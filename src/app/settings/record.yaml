@@ -1,0 +1,3 @@
+record:
+  folder_name: '4drec_data'
+  drives: ['D', 'E', 'F']

@@ -1,0 +1,289 @@
+import math
+from PyQt5.Qt import (
+    QLabel, Qt, QSizePolicy, QPainter,
+    QPen, QRect, QWidget, QPixmap
+)
+
+from utility.setting import setting
+
+from master.ui.custom_widgets import LayoutWidget
+from master.ui.state import state
+from master.ui.resource import icons
+
+from .camera_inspector import CameraInspector
+
+
+class CameraViewLayout(LayoutWidget):
+    def __init__(self):
+        super().__init__(stack=True)
+        self._camera_views = []
+        self._inspector = None
+        self._is_recording = False
+        self._setup_ui()
+
+        state.on_changed('recording', self._toggle_recording)
+        state.on_changed('closeup_camera', self._update)
+
+    def _setup_ui(self):
+        self._generate_camera_views()
+        counts = int(len(self._camera_views) / 2)
+
+        self._inspector = CameraInspector()
+
+        page_overview_widgets = [CameraViewGrid(self._camera_views)]
+        page_inspector_widgets = [
+            CameraViewGrid(self._camera_views[:counts], half=True),
+            self._inspector,
+            CameraViewGrid(self._camera_views[counts:], half=True)
+        ]
+
+        for widgets in (page_overview_widgets, page_inspector_widgets):
+            self.addWidget(CameraPage(widgets))
+
+        self._update()
+
+    def _update(self):
+        closeup_camera = state.get('closeup_camera')
+        inspector_serial = self._inspector.get_serial()
+        self._inspector.change_camera(closeup_camera)
+
+        if closeup_camera is None:
+            self.layout().setCurrentIndex(0)
+        elif closeup_camera is not None and inspector_serial is None:
+            self.layout().setCurrentIndex(1)
+
+    def _generate_camera_views(self):
+        for order, serial in enumerate(setting.cameras):
+            camera_view = CameraView(str(order + 1), serial)
+            self._camera_views.append(camera_view)
+
+    def _toggle_recording(self):
+        self._is_recording = state.get('recording')
+        self.update()
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.RightButton:
+            if state.get('closeup_camera') is not None:
+                state.set('closeup_camera', None)
+
+    def paintEvent(self, event):
+        super().paintEvent(event)
+
+        if self._is_recording:
+            painter = QPainter(self)
+            painter.setPen(QPen(Qt.red, 4))
+            painter.drawRect(QRect(2, 2, self.width() - 4, self.height() - 4))
+
+
+class CameraPage(LayoutWidget):
+    def __init__(self, widgets):
+        super().__init__()
+        self._widgets = widgets
+        self._setup_ui()
+
+    def _setup_ui(self):
+        for widget in self._widgets:
+            self.addWidget(widget)
+
+        if len(self._widgets) > 1:
+            self.layout().setStretch(1, 1)
+
+
+class CameraViewGrid(LayoutWidget):
+    def __init__(self, camera_views, half=False):
+        super().__init__(grid=True, margin=8, spacing=8)
+        self._camera_views = camera_views
+        self._is_half = half
+        self._setup_ui()
+
+    def _setup_ui(self):
+        for i in range(self.layout().columnCount()):
+            self.layout().setColumnStretch(i, 1)
+        for i in range(self.layout().rowCount()):
+            self.layout().setRowStretch(i, 1)
+
+    def showEvent(self, event):
+        if not self._is_half:
+            self._insert_camera_views(8)
+        else:
+            self._insert_camera_views(3)
+        self._setup_ui()
+
+    def hideEvent(self, event):
+        for camera_view in self._camera_views:
+            self.layout().removeWidget(camera_view)
+
+    def _insert_camera_views(self, column):
+        for i, camera_view in enumerate(self._camera_views):
+            x = i % column
+            y = math.floor(i / column)
+            self.addWidget(camera_view, y, x)
+            i += 1
+
+
+class CameraView(LayoutWidget):
+    def __init__(self, order, serial):
+        super().__init__(horizon=False, alignment=Qt.AlignCenter)
+        self._order = order
+        self._serial = serial
+        self._image = None
+        self._info = None
+        self._inspect = False
+        self._resize_leader = self._order == '1'
+        self._setup_ui()
+
+        state.on_changed('closeup_camera', self._update_inspect)
+        state.on_changed(f'pixmap_{self._serial}', self._update_pixmap)
+        state.on_changed('body_mode', lambda: self._image.set_map(None))
+
+    def _update_inspect(self):
+        closeup_camera = state.get('closeup_camera')
+        self._inspect = self._serial == closeup_camera
+        self._image.set_inspect(self._inspect)
+
+    def _update_pixmap(self):
+        if not self._inspect and not state.get('caching'):
+            pixmap = state.get(f'pixmap_{self._serial}')
+            self._image.set_map(pixmap)
+
+    def _setup_ui(self):
+        self.setMinimumSize(100, 100)
+
+        self._image = CameraImage(self._resize_leader)
+        self.addWidget(self._image)
+
+        self._info = CameraViewInfo(self._order, self._serial)
+        self.addWidget(self._info)
+
+        self.layout().setStretch(0, 1)
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            if not self._inspect:
+                state.set('closeup_camera', self._serial)
+            event.accept()
+        event.ignore()
+
+
+class CameraImage(QWidget):
+    _aspect_ratio = (
+        setting.camera_resolution[1] / setting.camera_resolution[0]
+    )
+
+    def __init__(self, resize_leader):
+        super().__init__()
+        self._pixmap = None
+
+        self._hover = False
+        self._inspect = False
+        self._resize_leader = resize_leader
+
+        self._setup_ui()
+
+    def set_map(self, pixmap):
+        if isinstance(pixmap, QPixmap):
+            self._pixmap = pixmap
+            self.update()
+
+    def _setup_ui(self):
+        self.setAttribute(Qt.WA_Hover, True)
+        self.setContentsMargins(0, 0, 0, 0)
+        self.setSizePolicy(
+            QSizePolicy.Expanding,
+            QSizePolicy.Expanding
+        )
+        self._inspect_map = icons.get('inspect')
+        self._pixmap = icons.get('connect_none')
+
+    def set_inspect(self, inspect):
+        if self._inspect != inspect:
+            self._inspect = inspect
+            self.update()
+
+    def resizeEvent(self, event):
+        if (
+            self._resize_leader and
+            self.isVisible()
+        ):
+            value = max(
+                event.size().width(),
+                event.size().height()
+            )
+            if value > 0:
+                state.set(
+                    'live_view_size',
+                    value
+                )
+
+    def enterEvent(self, event):
+        if not self._inspect:
+            self._hover = True
+            self.setCursor(Qt.PointingHandCursor)
+
+    def leaveEvent(self, event):
+        self._hover = False
+        self.unsetCursor()
+
+    def paintEvent(self, event):
+        height = self.width() * self._aspect_ratio
+        rect = QRect(
+            0, self.height() - height,
+            self.width(), height
+        )
+
+        if self._inspect:
+            painter = QPainter(self)
+            painter.drawPixmap(
+                (self.width() - self._inspect_map.width()) / 2,
+                rect.y() + (height - self._inspect_map.height()) / 2,
+                self._inspect_map
+            )
+            return
+
+        painter = QPainter(self)
+
+        if self._pixmap.width() > self.width():
+            painter.setRenderHint(QPainter.SmoothPixmapTransform)
+            painter.drawPixmap(
+                rect, self._pixmap
+            )
+        else:
+            painter.drawPixmap(
+                (self.width() - self._pixmap.width()) / 2,
+                rect.y() + (height - self._pixmap.height()) / 2,
+                self._pixmap
+            )
+
+        if self._hover:
+            painter.setPen(QPen(self.palette().highlight().color(), 2))
+            painter.drawRect(rect)
+
+
+class CameraViewInfo(LayoutWidget):
+    def __init__(self, order, serial):
+        super().__init__(stack=True)
+        self._order = order
+        self._serial = serial
+        state.on_changed('Serial', self._update)
+        self._setup_ui()
+
+    def _setup_ui(self):
+        for text, icon in ((self._order, 'camera'), (self._serial, 'tag')):
+            layout = LayoutWidget(spacing=8, alignment=Qt.AlignCenter)
+            icon_label = QLabel()
+            icon_label.setPixmap(icons.get(icon))
+            text_label = QLabel(text)
+
+            layout.addWidget(icon_label)
+            layout.addWidget(text_label)
+
+            self.addWidget(layout)
+
+        self._update()
+
+    def _update(self):
+        serial = state.get('Serial')
+        if serial:
+            self.layout().setCurrentIndex(1)
+        else:
+            self.layout().setCurrentIndex(0)

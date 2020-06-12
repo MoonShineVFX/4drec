@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=1">
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<head>
+    <meta charset="UTF-8">
+    <title>4DREC Streaming</title>
+    <link rel="stylesheet" href='normalize.css'/>
+    <link rel="stylesheet" href='style.css'/>
+</head>
+<body>
+    <div class="preview">
+        <div class="control">
+            <select onchange="activateCamera(this.value)">
+                {% for idx, camera_id in cameras %}
+                    <option value="{{camera_id}}">Camera - {{idx + 1}}</option>
+                {% endfor %}
+            </select>
+            <br/>
+            <input type="checkbox" onclick="toggleFocus(this.checked)"/> Focus
+            <br/>
+            <input type="checkbox" onclick="toggleOverlay(this.checked)"/> Overlay
+        </div>
+        <div class="frame">
+            <img src="video_feed">
+            <div class="overlay" id="overlay">
+                <div class="shape">
+                    <div class="center"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function activateCamera(value) {
+            fetch('activate?camera_id=' + value).then(resp => {
+                return resp.text();
+            }).then(text => {
+                console.log(text);
+            });
+        }
+
+        function toggleFocus(value) {
+            fetch('focus?toggle=' + value).then(resp => {
+                return resp.text();
+            }).then(text => {
+                console.log(text);
+            });
+        }
+
+        function toggleOverlay(value) {
+            document.getElementById("overlay").style.visibility = value ? 'visible' : 'hidden';
+        }
+    </script>
+</body>
+</html>

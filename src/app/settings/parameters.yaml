@@ -1,0 +1,36 @@
+camera_parameters:
+
+  BalanceRatioBlue:
+    min: 0.25
+    max: 4.0
+    default: 2.02
+    type: float
+    tick: 0.01
+
+  BalanceRatioRed:
+    min: 0.25
+    max: 4.0
+    default: 1.44
+    type: float
+    tick: 0.01
+
+  Gain:
+    min: 0.0
+    max: 47.99
+    default: 0.0
+    type: float
+    tick: 0.1
+
+  ExposureTime:
+    min: 100
+    max: 20000
+    default: 10000
+    type: int
+    tick: 10
+
+  Gamma:
+    min: 0.25
+    max: 1.0
+    default: 0.35
+    type: float
+    tick: 0.01
