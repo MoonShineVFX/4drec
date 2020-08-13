@@ -20,7 +20,7 @@ class CameraSaveMeta():
         self._frame = frame
         self._path = path
         self._cameras = {
-            camera: False for camera in setting.cameras
+            camera: False for camera in setting.get_working_camera_ids()
         }
 
     def save(self, camera_id, image_data):
@@ -67,9 +67,9 @@ class CameraManager():
         self.load_parameters('Default')
 
     def _build_camera_proxies(self):
-        """藉由 setting.cameras 創建相機 proxy 列表"""
+        """藉由 setting.get_working_camera_ids 創建相機 proxy 列表"""
         camera_list = {}
-        for camera_id in setting.cameras:
+        for camera_id in setting.get_working_camera_ids():
             camera_list[camera_id] = CameraProxy(
                 camera_id,
                 self._on_state_changed
@@ -463,7 +463,7 @@ class CameraManager():
             MessageType.CAMERA_STATUS,
             {
                 'calibrate_frame': self._camera_list[
-                    setting.cameras[0]
+                    setting.get_working_camera_ids()[0]
                 ].current_frame
             }
         )

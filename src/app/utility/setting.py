@@ -4,7 +4,7 @@ import platform
 import glob
 
 
-class SettingManager():
+class SettingManager:
     """設定管理
 
     將 settings 資料夾的所有 yaml 設定檔整合
@@ -50,17 +50,10 @@ class SettingManager():
             path = f'{drive}:/{self.record.folder_name}/'
             os.makedirs(path, exist_ok=True)
 
-    def is_master(self):
+    @staticmethod
+    def is_master():
         """確認是否是 master"""
         return os.environ['4DREC_TYPE'] == 'MASTER'
-
-    def get_cameras_by_slave(self):
-        """確認是否擁有 arduino 觸發器"""
-        name = platform.node()
-        order = self.slaves.index(name)
-        start_index = order * self.cameras_per_slave
-        end_index = start_index + self.cameras_per_slave
-        return self.cameras[start_index: end_index]
 
     def get_host_address(self):
         """取得 Master 連線地址"""
@@ -76,22 +69,19 @@ class SettingManager():
             self.deadline_address.port
         )
 
-    def get_record_folder_path(self, order):
+    def get_record_folder_path(self, camera_index):
         """取得錄製路徑
 
         藉由順序，輪流分配所設定的硬碟數量產生的路徑
 
-        Args:
-            order: 順序
-
         """
         drives = self.record.drives
-        idx = order % len(drives)
+        idx = camera_index % len(drives)
         drive = drives[idx]
         folder = self.record.folder_name
         return f'{drive}:/{folder}/'
 
-    def get_camera_order(self, camera_id):
+    def get_camera_number_by_id(self, camera_id):
         """取得相機的編號
 
         從相機序號查找編號
@@ -100,7 +90,50 @@ class SettingManager():
             camera_id: 相機序號
 
         """
-        return self.cameras.index(camera_id) + 1
+        return self.cameras[camera_id]['number']
+
+    def get_slave_cameras_count(self):
+        camera_count = 0
+        slave_index = self.get_slave_index()
+        start_idx = slave_index * 3
+        for camera_id in self.get_camera_numbers_by_position_order()[start_idx:start_idx + 3]:
+            if camera_id is not None:
+                camera_count += 1
+        return camera_count
+
+    def get_camera_id_by_number(self, find_number):
+        for id, value in self.cameras.items():
+            if find_number == value['number']:
+                return id
+        raise ValueError(f"can't find camera id by number {find_number}")
+
+    def get_position_id_by_number(self, find_number):
+        for position_letter, number_list in self.truss_positions.items():
+            num = 0
+            for number in number_list:
+                if number == find_number:
+                    return f'{position_letter}{num}'
+                num += 1
+        raise ValueError(f"can't find position id by number {find_number}")
+
+    def get_working_camera_ids(self):
+        if not hasattr(self, '__working_camera_ids'):
+            self.__working_camera_ids = []
+            for camera_number in self.get_camera_numbers_by_position_order()[-18:]:
+                if camera_number is not None:
+                    self.__working_camera_ids.append(
+                        self.get_camera_id_by_number(camera_number)
+                    )
+        return self.__working_camera_ids
+
+    def get_slave_index(self):
+        return self.slaves.index(platform.node())
+
+    def get_camera_numbers_by_position_order(self):
+        camera_numbers = []
+        for camera_number_list in self.truss_positions.values():
+            camera_numbers += camera_number_list
+        return camera_numbers
 
     def save_camera_parameters(self, parms):
         save_parms = {'camera_user_parameters': parms}

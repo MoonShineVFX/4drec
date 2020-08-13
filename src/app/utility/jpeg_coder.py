@@ -6,4 +6,4 @@
 
 from turbojpeg import TurboJPEG
 
-jpeg_coder = TurboJPEG('source/turbojpeg.dll')
+jpeg_coder = TurboJPEG('common/turbojpeg.dll')

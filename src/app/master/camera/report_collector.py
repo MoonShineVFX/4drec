@@ -172,7 +172,7 @@ class RecordReportContainer(ReportContainer):
 
     def _summarize_condition(self):
         """總結條件，當報告等於相機數量時 /dev"""
-        return len(self._reports) == len(setting.cameras)
+        return len(self._reports) == len(setting.get_working_camera_ids())
         # return len(self._reports) == 6
 
     def _summarize_report(self):
@@ -236,7 +236,7 @@ class SubmitReportContainer(ReportContainer):
         self._current_progress = 0.0  # 給 log 用
 
         # 先建立對應表
-        for camera_id in setting.cameras:
+        for camera_id in setting.get_working_camera_ids():
             self._progress_list[camera_id] = 0.0
 
     def _import_report(self, report):

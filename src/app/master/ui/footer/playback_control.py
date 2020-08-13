@@ -171,8 +171,8 @@ class ShotPlayer(QThread):
     def _prepare(self):
         body_mode = state.get('body_mode')
         if body_mode is BodyMode.PLAYBACK:
-            self._threashold = len(setting.cameras)
-            for camera_id in setting.cameras:
+            self._threashold = len(setting.get_working_camera_ids())
+            for camera_id in setting.get_working_camera_ids():
                 state.on_changed(f'pixmap_{camera_id}', self._loaded)
             if state.get('closeup_camera'):
                 state.on_changed('pixmap_closeup', self._loaded)

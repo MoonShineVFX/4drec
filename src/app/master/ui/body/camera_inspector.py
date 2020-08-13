@@ -51,7 +51,7 @@ class CameraInspectorInfo(QHBoxLayout):
     def __init__(self):
         super().__init__()
         self._serial = None
-        self._order = None
+        self._number = None
         self._zoom_ratio = 1
         self._text_label = None
 
@@ -69,7 +69,7 @@ class CameraInspectorInfo(QHBoxLayout):
 
     def _update(self):
         self._text_label.setText(
-            f'Camera: {self._order}        '
+            f'Camera: {self._number}        '
             f'Serial: {self._serial}        '
             f'Zoom: {self._zoom_ratio:.2f}x'
         )
@@ -77,7 +77,7 @@ class CameraInspectorInfo(QHBoxLayout):
     def update_info(self, serial=None, zoom=None):
         if serial is not None:
             self._serial = serial
-            self._order = setting.get_camera_order(self._serial)
+            self._number = setting.get_camera_number_by_id(self._serial)
 
         if zoom is not None:
             self._zoom_ratio = zoom

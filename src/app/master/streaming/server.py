@@ -37,7 +37,7 @@ class StreamingServer(Thread):
 
         @app.route('/')
         def index():
-            cameras = enumerate(setting.cameras)
+            cameras = enumerate(setting.get_working_camera_ids())
             return render_template('index.html', cameras=cameras)
 
         @app.route('/style.css')

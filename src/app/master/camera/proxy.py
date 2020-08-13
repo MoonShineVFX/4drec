@@ -84,22 +84,3 @@ class CameraProxy():
 
     def get_shot_image(self, *args, **kwargs):
         self._image_buffers.get_shot_image(*args, **kwargs)
-
-    def get_cli_info(self, is_recording=False):
-        """取得給 CLI 使用的相機狀態
-
-        Args:
-            is_recording: 是否是在錄製中
-
-        """
-        # 錄製中的話回報總錄製 frame 數量
-        if is_recording:
-            frame_num = self.record_frames_count
-        else:
-            frame_num = self.current_frame
-
-        return [
-            f'({setting.get_camera_order(self._id)}) {self._id}',
-            self.state.name,
-            f'{frame_num} / {self.perf_bias:.1f}'
-        ]

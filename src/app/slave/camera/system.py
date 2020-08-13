@@ -32,13 +32,14 @@ class CameraSystem:
             log.info('Initialize camera system')
             self._camera_system = PySpin.System.GetInstance()
             self._camera_list = self._camera_system.GetCameras()
-            camera_count = self._camera_list.GetSize()
+            current_cameras_count = self._camera_list.GetSize()
+            setting_cameras_count = setting.get_slave_cameras_count()
 
             # 相機數量不對的狀況
-            if camera_count != setting.cameras_per_slave:
+            if current_cameras_count != setting_cameras_count:
                 log.error((
                     "Camera count didn't match setting"
-                    f' ({camera_count}/{setting.cameras_per_slave}),'
+                    f' ({current_cameras_count}/{setting_cameras_count}),'
                     ' try again after 30s'
                 ))
                 time.sleep(10)
@@ -49,7 +50,7 @@ class CameraSystem:
             if not has_reset:
                 log.info('Factory reset cameras')
 
-                for i in range(camera_count):
+                for i in range(current_cameras_count):
                     camera = self._camera_list.GetByIndex(i)
                     camera.Init()
                     camera.FactoryReset()

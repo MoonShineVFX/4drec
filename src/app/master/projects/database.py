@@ -411,7 +411,7 @@ class ShotEntity(Entity):
             thumb_origin = self._cache_progress[
                 CameraCacheType.THUMBNAIL
             ]
-            unit = 1 / len(setting.cameras)
+            unit = 1 / len(setting.get_working_camera_ids())
             if camera_pixmap.frame not in thumb_origin:
                 thumb_origin[camera_pixmap.frame] = unit
             else:

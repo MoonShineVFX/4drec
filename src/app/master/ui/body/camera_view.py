@@ -53,8 +53,18 @@ class CameraViewLayout(LayoutWidget):
             self.layout().setCurrentIndex(1)
 
     def _generate_camera_views(self):
-        for order, serial in enumerate(setting.cameras):
-            camera_view = CameraView(str(order + 1), serial)
+        set_resize_leader = True
+        for camera_id in setting.get_working_camera_ids():
+            camera_number = setting.get_camera_number_by_id(camera_id)
+
+            camera_view = CameraView(
+                camera_number, camera_id,
+                resize_leader=set_resize_leader
+            )
+
+            if set_resize_leader:
+                set_resize_leader = False
+
             self._camera_views.append(camera_view)
 
     def _toggle_recording(self):
@@ -104,9 +114,9 @@ class CameraViewGrid(LayoutWidget):
 
     def showEvent(self, event):
         if not self._is_half:
-            self._insert_camera_views(8)
+            self._insert_camera_views(4)
         else:
-            self._insert_camera_views(3)
+            self._insert_camera_views(2)
         self._setup_ui()
 
     def hideEvent(self, event):
@@ -122,28 +132,28 @@ class CameraViewGrid(LayoutWidget):
 
 
 class CameraView(LayoutWidget):
-    def __init__(self, order, serial):
+    def __init__(self, camera_number, camera_id, resize_leader=False):
         super().__init__(horizon=False, alignment=Qt.AlignCenter)
-        self._order = order
-        self._serial = serial
+        self._camera_number = camera_number
+        self._camera_id = camera_id
         self._image = None
         self._info = None
         self._inspect = False
-        self._resize_leader = self._order == '1'
+        self._resize_leader = resize_leader
         self._setup_ui()
 
         state.on_changed('closeup_camera', self._update_inspect)
-        state.on_changed(f'pixmap_{self._serial}', self._update_pixmap)
+        state.on_changed(f'pixmap_{self._camera_id}', self._update_pixmap)
         state.on_changed('body_mode', lambda: self._image.set_map(None))
 
     def _update_inspect(self):
         closeup_camera = state.get('closeup_camera')
-        self._inspect = self._serial == closeup_camera
+        self._inspect = self._camera_id == closeup_camera
         self._image.set_inspect(self._inspect)
 
     def _update_pixmap(self):
         if not self._inspect and not state.get('caching'):
-            pixmap = state.get(f'pixmap_{self._serial}')
+            pixmap = state.get(f'pixmap_{self._camera_id}')
             self._image.set_map(pixmap)
 
     def _setup_ui(self):
@@ -152,7 +162,7 @@ class CameraView(LayoutWidget):
         self._image = CameraImage(self._resize_leader)
         self.addWidget(self._image)
 
-        self._info = CameraViewInfo(self._order, self._serial)
+        self._info = CameraViewInfo(self._camera_number, self._camera_id)
         self.addWidget(self._info)
 
         self.layout().setStretch(0, 1)
@@ -160,7 +170,7 @@ class CameraView(LayoutWidget):
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
             if not self._inspect:
-                state.set('closeup_camera', self._serial)
+                state.set('closeup_camera', self._camera_id)
             event.accept()
         event.ignore()
 
@@ -260,15 +270,20 @@ class CameraImage(QWidget):
 
 
 class CameraViewInfo(LayoutWidget):
-    def __init__(self, order, serial):
+    def __init__(self, camera_number, camera_id):
         super().__init__(stack=True)
-        self._order = order
-        self._serial = serial
+        self._camera_number = camera_number
+        self._camera_id = camera_id
+        self._number_text = self._make_number_text()
         state.on_changed('Serial', self._update)
         self._setup_ui()
 
+    def _make_number_text(self):
+        position_id = setting.get_position_id_by_number(self._camera_number)
+        return f'{position_id} ({self._camera_number:02d})'
+
     def _setup_ui(self):
-        for text, icon in ((self._order, 'camera'), (self._serial, 'tag')):
+        for text, icon in ((self._number_text, 'camera'), (self._camera_id, 'tag')):
             layout = LayoutWidget(spacing=8, alignment=Qt.AlignCenter)
             icon_label = QLabel()
             icon_label.setPixmap(icons.get(icon))
