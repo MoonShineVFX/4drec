@@ -4,12 +4,8 @@ unsigned long lastTriggerTime = -1;
 
 void setup() {
   Serial.begin(9600);
-  pinMode(A1, OUTPUT);
+  pinMode(19, OUTPUT);
   pinMode(LED_BUILTIN, OUTPUT);
-  pinMode(7, OUTPUT);
-  digitalWrite(7, HIGH);
-  pinMode(10, INPUT);
-  digitalWrite(10, HIGH);
   Serial.println("ready!");
 
   //digitalWrite(A1, HIGH);
@@ -21,16 +17,8 @@ void loop() {
     trigger(true);
   }
   
-  currentState = digitalRead(10);
-  if (currentState != lastState) {
-    lastState = currentState;
-    Serial.print("State change to: ");
-    Serial.println(currentState);
-    digitalWrite(LED_BUILTIN, currentState);
-  }
-
   if (lastTriggerTime != -1) {
-    if (millis() - lastTriggerTime > 1000) {
+    if (millis() - lastTriggerTime > 5000) {
       trigger(false);
     }
   }
@@ -39,11 +27,13 @@ void loop() {
 void trigger(bool toggle) {
   if (toggle) {
     Serial.println("trigger on!");
-    digitalWrite(A1, HIGH);
+    digitalWrite(19, HIGH);
+    digitalWrite(LED_BUILTIN, HIGH);
     lastTriggerTime = millis();
   }else{
     Serial.println("trigger off!");
-    digitalWrite(A1, LOW);
+    digitalWrite(19, LOW);
+    digitalWrite(LED_BUILTIN, LOW);
     lastTriggerTime = -1;
   }
 }

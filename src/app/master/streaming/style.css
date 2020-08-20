@@ -26,7 +26,7 @@ div.control > *:not(:first-child) {
 
 @media screen and (orientation: landscape) {
     :root {
-        --iw: 119.53vh;
+        --iw: 136.53vh;
         --ih: 100vh;
     }
 }
@@ -34,7 +34,7 @@ div.control > *:not(:first-child) {
 @media screen and (orientation: portrait) {
     :root {
         --iw: 100vw;
-        --ih: 83.66vw;
+        --ih: 73.24vw;
     }
 }
 

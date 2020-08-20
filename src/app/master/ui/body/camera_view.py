@@ -114,7 +114,7 @@ class CameraViewGrid(LayoutWidget):
 
     def showEvent(self, event):
         if not self._is_half:
-            self._insert_camera_views(4)
+            self._insert_camera_views(6)
         else:
             self._insert_camera_views(2)
         self._setup_ui()

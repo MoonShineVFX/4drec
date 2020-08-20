@@ -1,15 +1,15 @@
-submit_job_path: 'Q:/4drec/submit/jobs/'
-submit_shot_path: 'Q:/4drec/submit/shots/'
-submit_cali_path: 'Q:/4drec/submit/calis/'
+submit_job_path: 'Q:/jobs/'
+submit_shot_path: 'Q:/shots/'
+submit_cali_path: 'Q:/calis/'
 
 bypass_exist_size: 307200
 
 deadline_address:
-  ip: '192.168.1.65'
+  ip: '192.168.40.20'
   port: 8082
   
 deadline_mongo:
-  ip: '192.168.1.9'
+  ip: '192.168.40.20'
   port: 27100
 
 submit_parameters:

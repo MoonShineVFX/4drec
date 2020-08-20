@@ -1,0 +1,1 @@
+C:\Users\moonshine\Desktop\marker_mapper_1.0.12w64>aruco_calibration_fromimages.exe cali_123s6c_raw_cc.yml ./camera_cali_images_123s6c_raw_cc -size 0.0366

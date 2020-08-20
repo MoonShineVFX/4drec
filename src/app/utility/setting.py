@@ -119,7 +119,7 @@ class SettingManager:
     def get_working_camera_ids(self):
         if not hasattr(self, '__working_camera_ids'):
             self.__working_camera_ids = []
-            for camera_number in self.get_camera_numbers_by_position_order()[-18:]:
+            for camera_number in self.get_camera_numbers_by_position_order():
                 if camera_number is not None:
                     self.__working_camera_ids.append(
                         self.get_camera_id_by_number(camera_number)
