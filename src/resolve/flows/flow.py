@@ -2,8 +2,12 @@
 import os
 import shutil
 import subprocess
-from pathlib2 import Path
 import time
+import sys
+if sys.version_info[0] < 3:
+    from pathlib2 import Path
+else:
+    from pathlib import Path
 
 from reference import process
 
@@ -150,9 +154,8 @@ class PythonFlow(Flow):
 
     def _make_command(self):
         return FlowCommand(
-            execute=process.setting.python_execute,
+            execute=str(Path().parent.joinpath('resolve.bat')),
             args={
-                '': f'{os.getcwd()}/launch.py',
                 'executor': 'python',
                 'frame': process.setting.frame,
                 'shot_path': process.setting.shot_path,

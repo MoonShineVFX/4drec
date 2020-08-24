@@ -1,9 +1,0 @@
-host_address:
-  ip: '192.168.40.10'
-  port: 64100
-
-mongodb_address: '192.168.40.3:27101'
-
-camera_resolution: [4096, 3000]
-
-frame_rate: 30

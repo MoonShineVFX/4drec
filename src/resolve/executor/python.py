@@ -19,14 +19,14 @@ class PythonResolver():
 
     def _on_event_emit(self, event, payload):
         if event is ResolveEvent.COMPLETE:
-            print('python27 | Complete!!')
+            print('python | Complete!!')
         elif event is ResolveEvent.FAIL:
-            print(f'python27 | FAIL: {payload}')
+            print(f'python | FAIL: {payload}')
         elif event is ResolveEvent.LOG_INFO:
-            print(f'python27 | {payload}')
+            print(f'python | {payload}')
         elif event is ResolveEvent.LOG_STDOUT:
-            print(f'python27 | {payload}')
+            print(f'python | {payload}')
         elif event is ResolveEvent.LOG_WARNING:
-            print(f'python27 | WARN: {payload}')
+            print(f'python | WARN: {payload}')
         elif event is ResolveEvent.PROGRESS:
-            print(f'python27 | Progress: {payload:.2f}%')
+            print(f'python | Progress: {payload:.2f}%')

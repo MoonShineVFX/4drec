@@ -15,6 +15,8 @@ if __name__ == '__main__':
     from flows import flow_dict
     from executor import LocalResolver, HythonResolver, PythonResolver
 
+    print(sys.argv)
+
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '-e', '--executor', type=str,

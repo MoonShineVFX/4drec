@@ -5,7 +5,6 @@ from setting import Setting
 from flows import flow_pipeline
 
 
-
 class ResolveProcess():
     def __init__(
         self, frame, alicevision_path, aruco_path, shot_path, job_path, cali_path,
@@ -50,10 +49,6 @@ class ResolveProcess():
         self.dispatch_event(ResolveEvent.PROGRESS, progress)
 
     def run(self):
-        if not self._setting.validate():
-            self.fail('No Houdini Installed')
-            return
-
         progress = 0.0
         progress_segment = 100.0 / len(self._flows)
         for flow in self._flows:

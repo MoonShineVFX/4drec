@@ -28,7 +28,7 @@ class ConstructFromAruco(Flow):
             args=[
                 process.setting.shot_path,
                 process.setting.aruco_path + 'cam.yml',
-                0.06256,
+                0.0893,
                 'ARUCO_MIP_36h12',
                 self.get_folder_path() + 'out'
             ]
@@ -79,11 +79,11 @@ class GenerateSFM(PythonFlow):
                 'intrinsic': {
                     'intrinsicId': 'xxxxxxxx00',
                     'serialNumber': f'sxxxxxxxx',
-                    'principalPoint': [1224, 1024],
+                    'principalPoint': [2048, 1500],
                     'locked': '0',
-                    'pxFocalLength': 2954.9974003446682,
-                    'height': 2048,
-                    'width': 2448,
+                    'pxFocalLength': 4944.309375740098,
+                    'height': 3000,
+                    'width': 4096,
                     'initializationMode': 'unknown',
                     'pxInitialFocalLength': '-1',
                     'type': 'radial3',
@@ -238,6 +238,7 @@ class TransformStructure(PythonFlow):
 
     def run_python(self):
         import numpy as np
+        from common.camera_structure import camera_structure
 
         def distance(a, b):
             return np.linalg.norm(a - b)
@@ -249,34 +250,42 @@ class TransformStructure(PythonFlow):
             with open(GenerateSFM.get_file_path('sfm'), 'r') as f:
                 data = json.load(f)
 
-            camera_list = []
-            camera_indices = {}
+            camera_position_list = []
+            camera_indices = []
+            camera_id_position_dict = {}
 
             for i, pose in enumerate(data['poses']):
                 pos = [float(p) for p in pose['pose']['transform']['center']]
-                camera_list.append(pos)
+                camera_position_list.append(pos)
 
                 _id = pose['poseId']
-                camera_indices[_id] = i
+                camera_id_position_dict[_id] = np.array(pos, np.float32)
+                camera_indices.append(_id)
 
-            camera_list = np.array(camera_list, np.float32)
+            camera_position_list = np.array(camera_position_list, np.float32)
 
-            return data, camera_list, camera_indices
+            return data, camera_position_list, camera_id_position_dict, camera_indices
 
-        def get_vertical_vector(camera_list, camera_indices):
+        def get_vertical_vector(camera_id_position_dict):
             vertical_vectors = []
-            upper_idxs = process.setting.camera_position[3] + process.setting.camera_position[1]
-            lower_idxs = process.setting.camera_position[4] + process.setting.camera_position[2]
-            for upper_idx, lower_idx in zip(upper_idxs, lower_idxs):
-                upper_pos = camera_list[
-                    camera_indices[process.setting.cameras[upper_idx - 1]]
-                ]
-                lower_pos = camera_list[
-                    camera_indices[process.setting.cameras[lower_idx - 1]]
-                ]
-                vertical_vectors.append(normalize(upper_pos - lower_pos))
 
-            return normalize(np.average(vertical_vectors, axis=0))
+            for truss_letter in camera_structure.get_position_letters():
+                for upper_idx, lower_idx in ((2, 0), (3, 1)):
+                    upper_pos = camera_id_position_dict[
+                        camera_structure.get_camera_id_by_position(
+                            f'{truss_letter}{upper_idx}'
+                        )
+                    ]
+                    lower_pos = camera_id_position_dict[
+                        camera_structure.get_camera_id_by_position(
+                            f'{truss_letter}{lower_idx}'
+                        )
+                    ]
+                    if upper_pos is None or lower_pos is None:
+                        continue
+                    vertical_vectors.append(normalize(upper_pos - lower_pos))
+
+                return normalize(np.average(vertical_vectors, axis=0))
 
         def get_rotation(p0, p2, y, scale):
             x_p = p2 - y * abs(
@@ -287,23 +296,23 @@ class TransformStructure(PythonFlow):
             z = normalize(np.cross(x, y))
             return np.array([x, y, z], np.float32)
 
-        data, camera_list, camera_indices = get_struct()
+        data, camera_position_list, camera_id_position_dict, camera_indices = get_struct()
 
         # get positions
-        cam0_p = camera_list[
-            camera_indices[process.setting.reference.cameras[0][0]]
+        truss_position_0 = process.setting.reference.cameras[0][0]
+        cam0_p = camera_id_position_dict[
+            camera_structure.get_camera_id_by_position(truss_position_0)
         ]
-        cam2_p = camera_list[
-            camera_indices[process.setting.reference.cameras[1][0]]
+        truss_position_1 = process.setting.reference.cameras[1][0]
+        cam2_p = camera_id_position_dict[
+            camera_structure.get_camera_id_by_position(truss_position_1)
         ]
 
         # get calculate ref
         scale = process.setting.reference.diameter / distance(cam0_p, cam2_p)
         rot = get_rotation(
             cam0_p, cam2_p,
-            get_vertical_vector(
-                camera_list, camera_indices
-            ),
+            get_vertical_vector(camera_id_position_dict),
             scale
         )
         real_p0 = np.array(
@@ -314,22 +323,22 @@ class TransformStructure(PythonFlow):
             ), np.float32
         )
 
-        camera_list = camera_list.dot(np.linalg.inv(rot))
-        camera_list *= scale
+        camera_position_list = camera_position_list.dot(np.linalg.inv(rot))
+        camera_position_list *= scale
 
         offset = (
             real_p0 -
-            camera_list[
-                camera_indices[process.setting.reference.cameras[0][0]]
-            ]
+            camera_position_list[camera_indices.index(
+                camera_structure.get_camera_id_by_position(truss_position_0)
+            )]
         )
 
-        camera_list += offset
+        camera_position_list += offset
 
         for pose in data['poses']:
             _id = pose['poseId']
             pose['pose']['transform']['center'] = [
-                str(p) for p in camera_list[camera_indices[_id]]
+                str(p) for p in camera_position_list[camera_indices.index(_id)]
             ]
 
         with open(self.get_file_path('sfm'), 'w') as f:

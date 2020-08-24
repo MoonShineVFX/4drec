@@ -28,47 +28,11 @@ class Setting():
         with open('setting.yaml', 'r') as f:
             self._data.update(yaml.load(f, Loader=yaml.FullLoader))
 
-        self._data['houdini_path'] = self._get_houdini_path()
-        if self._data['houdini_path'] is not None:
-            self._data['houdini_execute'] = (
-                self._data['houdini_path'] +
-                '/bin/hython.exe'
-            )
-
     def __getattr__(self, attr):
         return getattr(self._data, attr)
 
-    def _get_houdini_path(self):
-        glob_path = f'{self.houdini.path} {self.houdini.version}.*'
-
-        folders = glob.glob(glob_path)
-
-        this_sub_ver = -1
-        this_folder = None
-        for folder in folders:
-            folder_sub_ver = int(folder[-3:])
-            if (
-                folder_sub_ver >= self.houdini.sub_version and
-                folder_sub_ver > this_sub_ver
-            ):
-                this_sub_ver = folder_sub_ver
-                this_folder = folder
-
-        return this_folder
-
     def set(self, prop, value):
         self._data[prop] = value
-
-    def validate(self):
-        # houdini
-        for step in self.resolve_steps:
-            if (
-                step.value in self.required_houdini_step and
-                self.houdini_path is None
-            ):
-                return False
-
-        return True
 
     def is_cali(self):
         return self.cali_path is None

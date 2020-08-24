@@ -2,9 +2,10 @@ import yaml
 import os
 import platform
 import glob
+from common.camera_structure.camera_structure import CameraStructure
 
 
-class SettingManager:
+class SettingManager(CameraStructure):
     """設定管理
 
     將 settings 資料夾的所有 yaml 設定檔整合
@@ -13,6 +14,7 @@ class SettingManager:
     """
 
     def __init__(self):
+        super().__init__()
         self._settings = {}  # 設定資料
 
         # 蒐集所有 settings 資料夾的 yaml 檔案
@@ -81,17 +83,6 @@ class SettingManager:
         folder = self.record.folder_name
         return f'{drive}:/{folder}/'
 
-    def get_camera_number_by_id(self, camera_id):
-        """取得相機的編號
-
-        從相機序號查找編號
-
-        Args:
-            camera_id: 相機序號
-
-        """
-        return self.cameras[camera_id]['number']
-
     def get_slave_cameras_count(self):
         camera_count = 0
         slave_index = self.get_slave_index()
@@ -101,39 +92,8 @@ class SettingManager:
                 camera_count += 1
         return camera_count
 
-    def get_camera_id_by_number(self, find_number):
-        for id, value in self.cameras.items():
-            if find_number == value['number']:
-                return id
-        raise ValueError(f"can't find camera id by number {find_number}")
-
-    def get_position_id_by_number(self, find_number):
-        for position_letter, number_list in self.truss_positions.items():
-            num = 0
-            for number in number_list:
-                if number == find_number:
-                    return f'{position_letter}{num}'
-                num += 1
-        raise ValueError(f"can't find position id by number {find_number}")
-
-    def get_working_camera_ids(self):
-        if not hasattr(self, '__working_camera_ids'):
-            self.__working_camera_ids = []
-            for camera_number in self.get_camera_numbers_by_position_order():
-                if camera_number is not None:
-                    self.__working_camera_ids.append(
-                        self.get_camera_id_by_number(camera_number)
-                    )
-        return self.__working_camera_ids
-
     def get_slave_index(self):
         return self.slaves.index(platform.node())
-
-    def get_camera_numbers_by_position_order(self):
-        camera_numbers = []
-        for camera_number_list in self.truss_positions.values():
-            camera_numbers += camera_number_list
-        return camera_numbers
 
     def save_camera_parameters(self, parms):
         save_parms = {'camera_user_parameters': parms}

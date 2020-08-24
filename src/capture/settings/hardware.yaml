@@ -1,0 +1,27 @@
+host_address:
+  ip: '192.168.40.10'
+  port: 64100
+
+mongodb_address: '192.168.40.3:27101'
+
+camera_resolution: [4096, 3000]
+
+frame_rate: 30
+
+slaves:
+  - '4DK-S00'
+  - '4DK-S01'
+  - '4DK-S02'
+  - '4DK-S03'
+  - '4DK-S04'
+  - '4DK-S05'
+  - '4DK-S06'
+  - '4DK-S07'
+  - '4DK-S08'
+  - '4DK-S09'
+  - '4DK-S10'
+  - '4DK-S11'
+  - '4DK-S12'
+  - '4DK-S13'
+  - '4DK-S14'
+  - '4DK-S15'
