@@ -5,8 +5,8 @@ reference:
     - ['E0', 0.15198]
 
 clip:
-  height: 3
-  diameter: 6
+  height: 2.4
+  diameter: 3.5
   ground: 0.01
 
 submit_parameters:

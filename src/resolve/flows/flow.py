@@ -109,7 +109,10 @@ class Flow(object):
 
         force_quit = False
         for line in iter(cmd.stdout.readline, b''):
-            line = line.decode('utf-8').rstrip()
+            try:
+                line = line.decode('utf-8').rstrip()
+            except:
+                line = line.decode('cp950').rstrip()
             process.log_cmd(line)
             force_quit = self._check_force_quit(line)
             if force_quit:
@@ -154,7 +157,7 @@ class PythonFlow(Flow):
 
     def _make_command(self):
         return FlowCommand(
-            execute=str(Path().parent.joinpath('resolve.bat')),
+            execute=process.setting.get_python_executable_path(),
             args={
                 'executor': 'python',
                 'frame': process.setting.frame,

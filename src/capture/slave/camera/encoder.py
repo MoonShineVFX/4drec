@@ -211,7 +211,9 @@ class CameraShotSubmitter(MixThread):
 
             # 取出圖像
             for camera_id, shot_file_path in shot_file_paths.items():
-                file_loader = CameraShotFileLoader(shot_file_path)
+                file_loader = CameraShotFileLoader(
+                    shot_file_path, self._log
+                )
 
                 # 進度定義
                 current_count = 0

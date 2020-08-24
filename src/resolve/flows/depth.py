@@ -2,7 +2,7 @@
 from reference import process
 
 from .flow import Flow, FlowCommand
-from .feature import StructureFromMotion, PrepareDenseScene
+from .feature import ClipLandmarks, PrepareDenseScene
 
 
 class DepthMapEstimation(Flow):
@@ -16,7 +16,7 @@ class DepthMapEstimation(Flow):
                 'aliceVision_depthMapEstimation'
             ),
             args={
-                'input': StructureFromMotion.get_file_path('sfm'),
+                'input': ClipLandmarks.get_file_path('sfm'),
                 'imagesFolder': PrepareDenseScene.get_folder_path(),
                 'downscale': process.setting.get_parameters()['depth_scale'],
                 'output': self.get_folder_path(),

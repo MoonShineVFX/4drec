@@ -2,7 +2,11 @@ import sys
 
 
 def __main__():
-    resolve_path = '//storage03/Cache/4DREC/resolve/'
+    fdrec_path = '//4dk-mst/share/4drec/'
+    src_path = fdrec_path + 'src/'
+    resolve_path = src_path + 'resolve/'
+    module_path = fdrec_path + 'deadline/module/'
 
-    if resolve_path not in sys.path:
-        sys.path.insert(1, resolve_path)
+    for insert_path in (src_path, resolve_path, module_path):
+        if insert_path not in sys.path:
+            sys.path.insert(0, insert_path)

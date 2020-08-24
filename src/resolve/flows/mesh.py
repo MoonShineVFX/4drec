@@ -20,7 +20,7 @@ class DepthMapFiltering(Flow):
                 'aliceVision_depthMapFiltering'
             ),
             args={
-                'input': StructureFromMotion.get_file_path('sfm'),
+                'input': ClipLandmarks.get_file_path('sfm'),
                 'minNumOfConsistentCams': 2,
                 'minNumOfConsistentCamsWithLowSimilarity': 3,
                 'depthMapsFolder': DepthMapEstimation.get_folder_path(),
@@ -49,7 +49,7 @@ class Meshing(Flow):
                 'aliceVision_meshing'
             ),
             args={
-                'input': StructureFromMotion.get_file_path('sfm'),
+                'input': ClipLandmarks.get_file_path('sfm'),
                 'depthMapsFolder': DepthMapEstimation.get_folder_path(),
                 'depthMapsFilterFolder': DepthMapFiltering.get_folder_path(),
                 'output': self.get_file_path('dense'),
@@ -213,7 +213,7 @@ class Texturing(Flow):
                 'input': Meshing.get_file_path('dense'),
                 'inputMesh': MeshDecimate.get_file_path('obj'),
                 'imagesFolder': PrepareDenseScene.get_folder_path(),
-                'textureSide': 8192,
+                'textureSide': 4096,
                 'useUDIM': 1,
                 'downscale': 1,
                 'unwrapMethod': 'Basic',

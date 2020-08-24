@@ -1,7 +1,11 @@
 # -*- coding: future_fstrings -*-
 import yaml
-import glob
 import os
+import sys
+if sys.version_info[0] < 3:
+    from pathlib2 import Path
+else:
+    from pathlib import Path
 
 
 class Setting():
@@ -53,6 +57,12 @@ class Setting():
         if self.gpu_core != -1:
             env['CUDA_VISIBLE_DEVICES'] = str(self.gpu_core)
         return env
+
+    def get_python_executable_path(self):
+        if sys.version_info[0] < 3:
+            return '//4dk-mst/share/4drec/src/resolve.bat'
+        else:
+            return str(Path().parent.joinpath('resolve.bat'))
 
     @property
     def frame_path(self):

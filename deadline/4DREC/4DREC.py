@@ -80,8 +80,8 @@ class FourDRecPlugin(DeadlinePlugin):
 
         self._process = ResolveProcess(
             frame=self.GetStartFrame(),
-            alicevision_path='Q:\\4DREC\\alicevision\\',
-            aruco_path='Q:\\4DREC\\aruco\\',
+            alicevision_path='Q:\\app\\alicevision\\',
+            aruco_path='Q:\\app\\aruco\\',
             shot_path=shot_path,
             job_path=job_path,
             cali_path=cali_path,
