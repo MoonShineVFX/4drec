@@ -11,7 +11,7 @@ import struct
 from utility.setting import setting
 from utility.define import UIEventType
 from utility.delay_executor import DelayExecutor
-from utility.jpeg_coder import jpeg_coder
+from common.jpeg_coder import jpeg_coder
 
 from master.ui import ui
 from master.projects import project_manager

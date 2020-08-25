@@ -60,7 +60,7 @@ class Setting():
 
     def get_python_executable_path(self):
         if sys.version_info[0] < 3:
-            return '//4dk-mst/share/4drec/src/resolve.bat'
+            return self._data['src_path'] + 'resolve.bat'
         else:
             return str(Path().parent.joinpath('resolve.bat'))
 

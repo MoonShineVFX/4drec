@@ -6,7 +6,7 @@ from PyQt5.Qt import QPixmap, QImage
 
 from utility.setting import setting
 from utility.message import message_manager
-from utility.jpeg_coder import jpeg_coder
+from common.jpeg_coder import jpeg_coder
 from utility.define import (
     UIEventType, MessageType, CameraLibraryTask, CameraCacheType
 )

@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-from utility.jpeg_coder import jpeg_coder
+from common.jpeg_coder import jpeg_coder
 
 
 class CameraImage():

@@ -23,6 +23,7 @@ def CleanupDeadlinePlugin(deadlinePlugin):
 
 class FourDRecPlugin(DeadlinePlugin):
     """4DREC Plugin"""
+    _app_path = '\\\\4dk-sto\\storage\\app\\'
 
     def __init__(self):
         self.InitializeProcessCallback += self.InitializeProcess
@@ -80,8 +81,8 @@ class FourDRecPlugin(DeadlinePlugin):
 
         self._process = ResolveProcess(
             frame=self.GetStartFrame(),
-            alicevision_path='Q:\\app\\alicevision\\',
-            aruco_path='Q:\\app\\aruco\\',
+            alicevision_path=self._app_path + 'alicevision\\',
+            aruco_path=self._app_path + 'aruco\\',
             shot_path=shot_path,
             job_path=job_path,
             cali_path=cali_path,

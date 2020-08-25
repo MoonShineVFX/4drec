@@ -3,7 +3,7 @@ from threading import Thread, Condition
 
 from utility.setting import setting
 from utility.define import UIEventType
-from utility.jpeg_coder import jpeg_coder
+from common.jpeg_coder import jpeg_coder
 
 from master.ui import ui
 

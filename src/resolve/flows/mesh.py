@@ -236,8 +236,7 @@ class Package(PythonFlow):
         from PIL import Image
         import numpy as np
         import struct
-        from turbojpeg import TurboJPEG
-        jpeg_encoder = TurboJPEG('common/turbojpeg.dll')
+        from common.jpeg_coder import jpeg_coder
 
         print(f'Start package')
         file_prefix = (
@@ -248,7 +247,7 @@ class Package(PythonFlow):
         # texture
         print('Convert texture')
         image = Image.open(Texturing.get_file_path('texture'))
-        jpeg_buffer = jpeg_encoder.encode(
+        jpeg_buffer = jpeg_coder.encode(
             np.array(image), quality=85
         )
         image.close()
