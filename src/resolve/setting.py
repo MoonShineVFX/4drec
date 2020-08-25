@@ -41,6 +41,9 @@ class Setting():
     def is_cali(self):
         return self.cali_path is None
 
+    def get_job_id(self):
+        return Path(self.job_path).stem
+
     def get_parameters(self):
         parms = {}
         for p in self._data['submit_parameters']:

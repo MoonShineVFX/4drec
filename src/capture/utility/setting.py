@@ -18,7 +18,8 @@ class SettingManager(CameraStructure):
         self._settings = {}  # 設定資料
 
         # 蒐集所有 settings 資料夾的 yaml 檔案
-        files = glob.glob('settings/*.yaml')
+        files = list(glob.glob('settings/*.yaml'))
+        files.append('../resolve/setting.yaml')
         for file in files:
             with open(file, 'r') as f:
                 self._settings.update(yaml.load(f, Loader=yaml.FullLoader))

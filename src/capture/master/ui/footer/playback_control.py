@@ -380,8 +380,12 @@ class PlaybackSlider(QSlider, EntityBinder):
             sf, ef = shot.frame_range
 
             closeup_camera = state.get('closeup_camera')
-            progress_thumb = progress[CameraCacheType.THUMBNAIL]
-            progress_origin = progress[CameraCacheType.ORIGINAL]
+
+            if isinstance(progress, tuple):
+                progress = {}
+
+            progress_thumb = progress.get(CameraCacheType.THUMBNAIL, [])
+            progress_origin = progress.get(CameraCacheType.ORIGINAL, [])
             is_closeup = closeup_camera and closeup_camera in progress_origin
 
             i = 0

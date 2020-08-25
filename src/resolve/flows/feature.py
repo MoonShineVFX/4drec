@@ -81,7 +81,8 @@ class FeatureMatching(Flow):
 
 class StructureFromMotion(Flow):
     _file = {
-        'sfm': 'struct.sfm'
+        'sfm': 'struct.sfm',
+        'stats': 'stats.json'
     }
 
     def __init__(self):

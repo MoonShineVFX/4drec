@@ -11,7 +11,9 @@ import struct
 from utility.setting import setting
 from utility.define import UIEventType
 from utility.delay_executor import DelayExecutor
+
 from common.jpeg_coder import jpeg_coder
+from common.fourd_frame import FourdFrameManager
 
 from master.ui import ui
 from master.projects import project_manager
@@ -148,30 +150,38 @@ class ResolvePackage():
             f'{setting.submit_job_path}{self._job_id}/export/'
         )
 
-        file_path = f'{load_path}{self._frame:06d}.4dr'
-        if not os.path.isfile(file_path):
+        file_path = f'{load_path}{self._frame:06d}'
+        old_format_path = file_path + '.4dr'
+        new_format_path = file_path + '.4df'
+        if os.path.isfile(old_format_path):
+            with open(old_format_path, 'rb') as f:
+                data = f.read()
+
+            geo_size, tex_size = struct.unpack(
+                self._format, data[:self._header_size]
+            )
+            seek = self._header_size
+
+            # load geo
+            buffer = lz4framed.decompress(data[seek:seek + geo_size])
+            arr = np.frombuffer(buffer, dtype=np.float32)
+            seek += geo_size
+            arr = arr.reshape(-1, 5)
+
+            self._geo_data = [arr[:, :3], arr[:, 3:]]
+
+            # load texture
+            self._tex_data = jpeg_coder.decode(data[seek:seek + tex_size])
+
+            return sys.getsizeof(self._geo_data) + sys.getsizeof(self._tex_data)
+        elif os.path.isfile(new_format_path):
+            fourd_frame = FourdFrameManager.load(new_format_path)
+            self._geo_data = fourd_frame.get_geo_data()
+            self._tex_data = fourd_frame.get_texture_data()
+
+            return sys.getsizeof(self._geo_data) + sys.getsizeof(self._tex_data)
+        else:
             return None
-
-        with open(file_path, 'rb') as f:
-            data = f.read()
-
-        geo_size, tex_size = struct.unpack(
-            self._format, data[:self._header_size]
-        )
-        seek = self._header_size
-
-        # load geo
-        buffer = lz4framed.decompress(data[seek:seek + geo_size])
-        arr = np.frombuffer(buffer, dtype=np.float32)
-        seek += geo_size
-        arr = arr.reshape(-1, 5)
-
-        self._geo_data = [arr[:, :3], arr[:, 3:]]
-
-        # load texture
-        self._tex_data = jpeg_coder.decode(data[seek:seek + tex_size])
-
-        return sys.getsizeof(self._geo_data) + sys.getsizeof(self._tex_data)
 
     def to_payload(self):
         return len(self._geo_data[0]), self._geo_data, self._tex_data
@@ -186,7 +196,8 @@ class RigPackage(ResolvePackage):
 
     def load(self):
         file = (
-            f'{setting.submit_cali_path}{self._cali_id}/calibrated.sfm'
+            f'{setting.submit_cali_path}{self._cali_id}'
+            'StructureFromMotion/struct.sfm'
         )
 
         if not os.path.isfile(file):

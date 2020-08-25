@@ -232,70 +232,33 @@ class Package(PythonFlow):
         super(Package, self).__init__(no_folder=True)
 
     def run_python(self):
-        import lz4framed
-        from PIL import Image
-        import numpy as np
-        import struct
-        from common.jpeg_coder import jpeg_coder
+        from common.fourd_frame import FourdFrameManager
+        import json
 
-        print(f'Start package')
-        file_prefix = (
-            process.setting.export_path +
-            f'{process.setting.frame:06d}'
+        # stats
+        with open(StructureFromMotion.get_file_path('stats')) as f:
+            stats_data = json.load(f)['sfm']
+
+        # sfm
+        with open(ClipLandmarks.get_file_path('sfm')) as f:
+            sfm_parameters = json.load(f)
+        for del_key in ('version', 'structure'):
+            del sfm_parameters[del_key]
+
+        FourdFrameManager.save(
+            save_path=process.setting.export_path +
+            f'{process.setting.frame:06d}.4df',
+            obj_path=Texturing.get_file_path('obj'),
+            jpg_path=Texturing.get_file_path('texture'),
+            frame=process.setting.frame,
+            submit_parameters=process.setting.get_parameters(),
+            sfm_parameters=sfm_parameters,
+            validViews=int(stats_data['validViews']),
+            poses=int(stats_data['poses']),
+            points=int(stats_data['points']),
+            residual=float(stats_data['residual']),
+            job_id=process.setting.get_job_id().encode()
         )
-
-        # texture
-        print('Convert texture')
-        image = Image.open(Texturing.get_file_path('texture'))
-        jpeg_buffer = jpeg_coder.encode(
-            np.array(image), quality=85
-        )
-        image.close()
-
-        # model
-        print('Convert geo')
-        pos_list = []
-        uv_list = []
-        point_list = []
-
-        with open(Texturing.get_file_path('obj'), 'r') as f:
-            for line in f:
-                if line.startswith('v '):
-                    _, x, y, z = line.split()
-                    pos_list.append((x, y, z))
-                elif line.startswith('vt '):
-                    _, u, v = line.split()
-                    uv_list.append((u, v))
-                elif line.startswith('f '):
-                    points = line.split()[1:]
-                    for point in points:
-                        p, uv = point.split('/')
-                        point_list.append((p, uv))
-
-        pos_list = np.array(pos_list, np.float32)
-        uv_list = np.array(uv_list, np.float32)
-        point_list = np.array(point_list, np.int32)
-
-        uv_list *= [1, -1]
-        uv_list += [0, 1.0]
-        point_list -= 1
-        point_list = point_list.T
-
-        pos_list = pos_list[point_list[0]]
-        uv_list = uv_list[point_list[1]]
-
-        out_list = np.hstack((pos_list, uv_list))
-        geo_buffer = lz4framed.compress(out_list.tobytes())
-
-        # package
-        print('Save 4dr')
-        header = struct.pack('II', len(geo_buffer), len(jpeg_buffer))
-
-        with open(file_prefix + '.4dr', 'wb') as f:
-            f.write(header)
-            f.write(geo_buffer)
-            f.write(jpeg_buffer)
-
 
 class OptimizeStorage(PythonFlow):
     def __init__(self):

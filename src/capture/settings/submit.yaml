@@ -11,17 +11,3 @@ deadline_address:
 deadline_mongo:
   ip: '192.168.40.20'
   port: 27100
-
-submit_parameters:
-  - desc: 'Depth Quality (1 is best)'
-    name: 'depth_scale'
-    default: 2
-    min: 1
-    max: 10
-    type: 'int'
-  - desc: 'Mesh Reduce Ratio (1 is original)'
-    name: 'mesh_reduce_ratio'
-    default: 0.3
-    min: 0.1
-    max: 1.0
-    type: 'float'
