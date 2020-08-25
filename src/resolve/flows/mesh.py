@@ -237,7 +237,7 @@ class Package(PythonFlow):
         import numpy as np
         import struct
         from turbojpeg import TurboJPEG
-        jpeg_encoder = TurboJPEG('turbojpeg.dll')
+        jpeg_encoder = TurboJPEG('common/turbojpeg.dll')
 
         print(f'Start package')
         file_prefix = (
@@ -303,17 +303,17 @@ class OptimizeStorage(PythonFlow):
         super(OptimizeStorage, self).__init__(no_folder=True)
 
     def run_python(self):
-        # PrepareDenseScene._clean_folder()
-        # Meshing._clean_folder()
-        # FeatureExtraction._clean_folder()
-        # DepthMapEstimation._clean_folder()
-        # DepthMapFiltering._clean_folder()
-        # StructureFromMotion._clean_folder()
-        # MeshFiltering._clean_folder()
-        # MeshClipping._clean_folder()
-        # Texturing._clean_folder()
-        # MeshDecimate._clean_folder()
-        # FeatureMatching._clean_folder()
-        # ClipLandmarks._clean_folder()
-        # ConvertSFM._clean_folder()
+        PrepareDenseScene._clean_folder()
+        Meshing._clean_folder()
+        FeatureExtraction._clean_folder()
+        DepthMapEstimation._clean_folder()
+        DepthMapFiltering._clean_folder()
+        StructureFromMotion._clean_folder()
+        MeshFiltering._clean_folder()
+        MeshClipping._clean_folder()
+        Texturing._clean_folder()
+        MeshDecimate._clean_folder()
+        FeatureMatching._clean_folder()
+        ClipLandmarks._clean_folder()
+        ConvertSFM._clean_folder()
         return

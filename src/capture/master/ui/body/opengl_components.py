@@ -49,7 +49,7 @@ class OpenGLCamera():
         project_matrix[0] /= self._aspect
 
         move_matrix = glm.mat4(1.0)
-        move_matrix = glm.translate(move_matrix, [*self._pos, self._zoom])
+        move_matrix = glm.translate(move_matrix, glm.vec3(*self._pos, self._zoom))
         move_matrix = glm.rotate(
             move_matrix, math.radians(self._rot_x), (1.0, 0.0, 0.0)
         )
@@ -133,7 +133,7 @@ class OpenGLProgram():
 
 
 class OpenGLObject():
-    _texture_resolution = 8192
+    _texture_resolution = 4096
 
     def __init__(
         self, vertex_shader, fragment_shader,
@@ -298,7 +298,7 @@ class FloorObject(OpenGLObject):
             ],
             np.float32
         )
-        pos_list *= 0.75
+        pos_list *= 1.5
 
         uv_list = np.array(
             [
