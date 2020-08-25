@@ -1,6 +1,8 @@
 .idea/workspace.xml
 .idea/tasks.xml
 **/.python/
+deadline/module
+*.skb
 
 # Created by .ignore support plugin (hsz.mobi)
 ### Python template

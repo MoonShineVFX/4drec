@@ -5,6 +5,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src/capture" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/resolve" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/deadline/module" />
       <excludeFolder url="file://$MODULE_DIR$/src/.python" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.7 (4drec)" jdkType="Python SDK" />
