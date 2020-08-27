@@ -1,6 +1,6 @@
-submit_job_path: '//4dk-sto/storage/jobs/'
-submit_shot_path: '//4dk-sto/storage/shots/'
-submit_cali_path: '//4dk-sto/storage/calis/'
+submit_job_path: 'q:/jobs/'
+submit_shot_path: 'q:/shots/'
+submit_cali_path: 'q:/calis/'
 
 bypass_exist_size: 307200
 
