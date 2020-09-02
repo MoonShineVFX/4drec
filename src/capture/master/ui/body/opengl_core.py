@@ -61,12 +61,14 @@ class OpenGLCore(QOpenGLWidget):
     def set_geo(self, cache):
         obj = self._objects['main']
         if cache is None:
+            # clean empty
             if not obj.is_empty():
                 self._interface.update_vertex_count(0)
                 obj.update()
                 self.update()
             return
         elif cache[2] is None:
+            # camera rig geo
             self._objects['camera'].update(cache[0], cache[1][0])
             return
 
