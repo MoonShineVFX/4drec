@@ -1,6 +1,7 @@
 from PyQt5.Qt import QLabel, QWidget, Qt
 
 from utility.define import BodyMode
+from utility.fps_counter import FPScounter
 
 from master.ui.state import state, get_real_frame
 
@@ -16,6 +17,8 @@ class ModelView(QWidget):
         self._core = OpenGLCore(self, self._interface)
         self._interface.setParent(self)
         self._cache = {}
+
+        self._fps_counter = FPScounter(self._interface.update_fps)
 
         state.on_changed('opengl_data', self._update_geo)
         state.on_changed('Rig', self._update_rig)
@@ -38,6 +41,7 @@ class ModelView(QWidget):
         if state.get('caching'):
             return
         self._core.set_geo(state.get('opengl_data'))
+        self._fps_counter.tick()
 
     def _on_key_pressed(self):
         key = state.get('key')
@@ -72,6 +76,7 @@ class ModelInterface(QLabel):
         self._vertex_count = 0
         self._gamma = 0
         self._real_frame = -1
+        self._fps = 0
 
         self._setup_ui()
         state.on_changed('current_slider_value', self._update_real_frame)
@@ -89,13 +94,17 @@ class ModelInterface(QLabel):
         self._gamma = value
         self._update()
 
+    def update_fps(self, fps):
+        self._fps = fps
+        self._update()
+
     def _update_real_frame(self):
         slider_value = state.get('current_slider_value')
         self._real_frame = get_real_frame(slider_value)
         self._update()
 
     def _update(self):
-        self.setText(
+        text = (
             f'Vertices:  {self._vertex_count}\n'
             f'Real Frame:  {self._real_frame}\n'
             f'Gamma Correct:  {self._gamma:.1f}\n'
@@ -105,3 +114,8 @@ class ModelInterface(QLabel):
             '[C]  Cache All Frames\n'
             '[Z]  Reset Camera'
         )
+
+        if state.get('playing'):
+            text += f'\n\nfps: {self._fps}'
+
+        self.setText(text)

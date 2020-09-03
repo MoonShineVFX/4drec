@@ -6,7 +6,6 @@ from .package import RigPackage, ResolvePackage
 
 
 def load_geometry(job_id, cali_id, frame):
-
     # check rig or 4df
     if frame is None:
         package = RigPackage(job_id, cali_id)
@@ -23,14 +22,15 @@ def load_geometry(job_id, cali_id, frame):
 
 
 class MultiExecutor(threading.Thread):
-    def __init__(self):
+    def __init__(self, manager):
         super().__init__()
         self._queue = Queue()
+        self._manager = manager
         self.start()
 
     def run(self):
         while True:
-            manager_queue, tasks = self._queue.get()
+            tasks = self._queue.get()
 
             future_list = []
             with ProcessPoolExecutor() as executor:
@@ -42,10 +42,8 @@ class MultiExecutor(threading.Thread):
 
                 for future in as_completed(future_list):
                     package = future.result()
-                    manager_queue.put(package)
+                    self._manager.save_package(package)
+                    self._manager.send_ui(None)
 
     def add_task(self, task):
         self._queue.put(task)
-
-
-multi_executor = MultiExecutor()

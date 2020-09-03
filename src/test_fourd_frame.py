@@ -24,8 +24,6 @@ geo_a_lz4 = lz4framed.compress(geo_data_a)
 geo_b_lz4 = lz4framed.compress(geo_data_b)
 texture_lz4 = lz4framed.compress(texture_data)
 
-print_size(geo_data_a, geo_data_b, texture_data)
-
 times = 10
 t = perf_counter()
 for i in range(times):
@@ -34,5 +32,9 @@ for i in range(times):
     lz4framed.decompress(texture_lz4)
 e = perf_counter() - t
 print(e / times)
-print_size(geo_a_lz4, geo_b_lz4, texture_lz4)
 
+t = perf_counter()
+for i in range(times):
+    lz4framed.decompress(texture_lz4)
+e = perf_counter() - t
+print(e / times)
