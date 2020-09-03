@@ -8,7 +8,7 @@ from master.ui import ui
 from master.projects import project_manager
 
 from .package import ResolvePackage, RigPackage
-from .multi_executor import MultiExecutor
+from .multi_executor import multi_executor
 
 
 class ResolveManager(threading.Thread):
@@ -18,7 +18,6 @@ class ResolveManager(threading.Thread):
         self._queue = Queue()
         self._cache = {}
         self._delay = DelayExecutor()
-        self._multi_executor = MultiExecutor(self)
 
         # 綁定 UI
         ui.dispatch_event(
@@ -38,13 +37,13 @@ class ResolveManager(threading.Thread):
     def _handle_package(self, package):
         result = package.load()
         if result is None:
-            self.send_ui(None)
+            self._send_ui(None)
             return
 
         self.save_package(package)
-        self.send_ui(package)
+        self._send_ui(package)
 
-    def send_ui(self, package):
+    def _send_ui(self, package):
         payload = None
         if package is not None:
             payload = package.to_payload()
@@ -69,7 +68,17 @@ class ResolveManager(threading.Thread):
 
     def cache_whole_job(self):
         job = project_manager.current_job
-        self._multi_executor.add_task(job)
+        job_id = job.get_id()
+        cali_id = job.get_cali_id()
+        
+        tasks = []
+        for f in job.frames:
+            if self.has_cache(job_id, f):
+                self._send_ui(None)
+                continue
+            tasks.append((job_id, cali_id, f))
+        
+        multi_executor.add_task((self._queue, tasks))
 
     def has_cache(self, job_id, frame):
         return job_id in self._cache and frame in self._cache[job_id]
@@ -83,7 +92,7 @@ class ResolveManager(threading.Thread):
         # get already cached
         if self.has_cache(job_id, frame):
             package = self._cache[job_id][frame]
-            self.send_ui(package)
+            self._send_ui(package)
         # load rig data
         elif frame is None:
             package = RigPackage(job_id, cali_id)

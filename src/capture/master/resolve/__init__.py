@@ -1,4 +1,5 @@
-from .manager import ResolveManager
+from multiprocessing import current_process
 
-
-resolve_manager = ResolveManager()
+if current_process().name == 'MainProcess':
+    from .manager import ResolveManager
+    resolve_manager = ResolveManager()

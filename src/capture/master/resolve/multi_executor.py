@@ -23,34 +23,29 @@ def load_geometry(job_id, cali_id, frame):
 
 
 class MultiExecutor(threading.Thread):
-    def __init__(self, manager):
+    def __init__(self):
         super().__init__()
-        self._manager = manager
         self._queue = Queue()
         self.start()
 
     def run(self):
         while True:
-            job = self._queue.get()
-            job_id = job.get_id()
-            cali_id = job.get_cali_id()
+            manager_queue, tasks = self._queue.get()
 
+            future_list = []
             with ProcessPoolExecutor() as executor:
-                tasks = []
-                for f in job.frames:
-                    if self._manager.has_cache(job_id, f):
-                        self._manager.send_ui(None)
-                        continue
+                for job_id, cali_id, f in tasks:
                     future = executor.submit(
                         load_geometry, job_id, cali_id, f
                     )
-                    tasks.append(future)
+                    future_list.append(future)
 
-                for future in as_completed(tasks):
+                for future in as_completed(future_list):
                     package = future.result()
-                    if package is not None:
-                        self._manager.save_package(package)
-                    self._manager.send_ui(None)
+                    manager_queue.put(package)
 
-    def add_task(self, shot):
-        self._queue.put(shot)
+    def add_task(self, task):
+        self._queue.put(task)
+
+
+multi_executor = MultiExecutor()
