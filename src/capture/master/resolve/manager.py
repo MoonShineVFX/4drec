@@ -44,14 +44,22 @@ class ResolveManager(threading.Thread):
         self.save_package(package)
         self.send_ui(package)
 
-    def send_ui(self, package):
-        payload = None
-        if package is not None:
-            payload = package.to_payload()
+    def _send_payload(self, payload):
         ui.dispatch_event(
             UIEventType.RESOLVE_GEOMETRY,
             payload
         )
+
+    def ui_tick_export(self):
+        ui.dispatch_event(
+            UIEventType.TICK_EXPORT
+        )
+
+    def send_ui(self, package):
+        if package is not None:
+            self._send_payload(package.to_payload())
+        else:
+            self._send_payload(None)
 
     def _add_task(self, package):
         self._queue.put(package)
@@ -79,7 +87,7 @@ class ResolveManager(threading.Thread):
                 continue
             tasks.append((job_id, cali_id, f))
         
-        self._multi_executor.add_task(tasks)
+        self._multi_executor.add_task('cache_all', tasks)
 
     def has_cache(self, job_id, frame):
         return job_id in self._cache and frame in self._cache[job_id]
@@ -108,3 +116,10 @@ class ResolveManager(threading.Thread):
                 )
             else:
                 self._add_task(package)
+
+    def export_model(self, job, frames, export_path):
+        job_id = job.get_id()
+        self._multi_executor.add_task(
+            'export_all',
+            (job_id, frames, export_path)
+        )

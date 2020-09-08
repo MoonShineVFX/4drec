@@ -1,1 +1,1 @@
-from .jpeg_coder import jpeg_coder
+from .jpeg_coder import jpeg_coder, TJPF_RGB

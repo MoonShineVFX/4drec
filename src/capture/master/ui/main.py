@@ -1,7 +1,8 @@
 import sys
-from PyQt5.Qt import QMainWindow, QApplication, QDesktopWidget
+from PyQt5.Qt import QMainWindow, QApplication
 
 from utility.define import UIEventType, BodyMode, CameraState
+from utility.logger import log
 
 
 class MainWindow(QMainWindow):
@@ -28,6 +29,7 @@ class MainWindow(QMainWindow):
         self._setup_ui()
 
     def _setup_ui(self):
+        log.info('create widgets')
         """創建介面物件"""
         from .custom_widgets import LayoutWidget, make_layout
         from .header import Header
@@ -36,6 +38,7 @@ class MainWindow(QMainWindow):
         from .sidebar import Sidebar
         from .dialog import SecondScreenView
         self.setStyleSheet(self._default)
+        log.info('finish widgets')
 
         # 尺寸
         self.setGeometry(100, 80, 1600, 1100)
@@ -186,6 +189,9 @@ class MainWindow(QMainWindow):
 
         elif event.type is UIEventType.CALI_LIST:
             state.set('cali_list', event.get_payload())
+
+        elif event.type is UIEventType.TICK_EXPORT:
+            state.set('tick_export', event.get_payload())
 
     def _on_project_list_open(self):
         if self._state.get('project_list_dialog'):

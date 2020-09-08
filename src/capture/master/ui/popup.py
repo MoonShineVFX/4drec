@@ -83,7 +83,7 @@ class MessageBox(QDialog):
 
 def popup(
     parent=None, title='MessageBox', message='', field='', dialog=None,
-    confirm=False
+    confirm=False, dialog_args=None
 ):
     if parent is None:
         from .main import MainWindow
@@ -94,6 +94,8 @@ def popup(
 
     if dialog is None:
         dialog = MessageBox(parent, title, message, field, confirm)
+    elif dialog_args is not None:
+        dialog = dialog(parent, *dialog_args)
     else:
         dialog = dialog(parent)
 

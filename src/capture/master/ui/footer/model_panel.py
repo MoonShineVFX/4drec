@@ -1,7 +1,7 @@
-from PyQt5.Qt import Qt
+from PyQt5.Qt import Qt, QFileDialog
 
 from master.ui.custom_widgets import LayoutWidget, PushButton
-from master.ui.dialog import CacheProgressDialog
+from master.ui.dialog import CacheProgressDialog, ExportProgressDialog
 from master.ui.popup import popup
 from master.ui.state import state
 
@@ -28,7 +28,8 @@ class ModelPanel(LayoutWidget):
         button = PushButton(
             '  EXPORT', 'export', size=(180, 60)
         )
-        button.setEnabled(False)
+        button.clicked.connect(self._export_model)
+
         self.addWidget(button)
 
     def showEvent(self, event):
@@ -51,3 +52,8 @@ class ModelPanel(LayoutWidget):
             self.buttons.buttons['Rig'].animateClick()
         elif key == Qt.Key_C:
             self.buttons.buttons['Cache'].animateClick()
+
+    def _export_model(self):
+        directory = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
+        if directory is not None and directory != '':
+            popup(dialog=ExportProgressDialog, dialog_args=(directory,))

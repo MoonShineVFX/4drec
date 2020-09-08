@@ -7,17 +7,20 @@ from master.ui.custom_widgets import move_center, make_layout
 from master.ui.state import state
 
 
-class CacheProgressDialog(QDialog):
+class ProgressDialog(QDialog):
     _default = '''
     QProgressBar {
       min-width: 350px;
     }
     '''
 
-    def __init__(self, parent):
+    def __init__(self, parent, title, total_progress):
         super().__init__(parent)
-        self.setWindowTitle('Caching')
+        self.setWindowTitle(title)
+        self._total_progress = total_progress
+
         self._progress_bar = None
+
         self._setup_ui()
         self._prepare()
 
@@ -27,22 +30,6 @@ class CacheProgressDialog(QDialog):
             Qt.Window | Qt.WindowTitleHint | Qt.CustomizeWindowHint
         )
 
-        shot = state.get('current_shot')
-        body_mode = state.get('body_mode')
-        if body_mode is BodyMode.PLAYBACK:
-            count = len(setting.get_working_camera_ids())
-
-            if state.get('closeup_camera'):
-                count += 1
-
-            total_progress = (
-                shot.frame_range[1] - shot.frame_range[0] + 1
-            ) * count
-        elif body_mode is BodyMode.MODEL:
-            count = 1
-
-            total_progress = len(state.get('frames'))
-
         self.setStyleSheet(self._default)
         layout = make_layout(
             horizon=False,
@@ -51,7 +38,7 @@ class CacheProgressDialog(QDialog):
         )
 
         self._progress_bar = QProgressBar()
-        self._progress_bar.setRange(0, total_progress)
+        self._progress_bar.setRange(0, self._total_progress)
         self._progress_bar.setTextVisible(True)
         self._progress_bar.setFormat(r'%p% (%v/%m)')
         self._progress_bar.setValue(0)
@@ -64,22 +51,78 @@ class CacheProgressDialog(QDialog):
         move_center(self)
 
     def _prepare(self):
-        body_mode = state.get('body_mode')
-        if body_mode is BodyMode.PLAYBACK:
-            for camera_id in setting.get_working_camera_ids():
-                state.on_changed(f'pixmap_{camera_id}', self._increase)
-            if state.get('closeup_camera'):
-                state.on_changed('pixmap_closeup', self._increase)
-        elif body_mode is BodyMode.MODEL:
-            state.on_changed('opengl_data', self._increase)
+        return
 
-    def _increase(self):
+    def increase(self):
         self._progress_bar.setValue(self._progress_bar.value() + 1)
 
         if self._progress_bar.value() == self._progress_bar.maximum():
             self.close()
 
+    def _on_show(self):
+        return
+
+    def _on_close(self):
+        return
+
     def showEvent(self, event):
+        self._on_show()
+        event.accept()
+
+    def closeEvent(self, event):
+        self._on_close()
+        event.accept()
+
+
+class ExportProgressDialog(ProgressDialog):
+    def __init__(self, parent, export_path):
+        super().__init__(parent, 'Exporting', len(state.get('frames')))
+        self._export_path = export_path
+
+    def _prepare(self):
+        state.on_changed('tick_export', self.increase)
+
+    def _on_show(self):
+        offset_frame = state.get('offset_frame')
+        frames = state.get('frames')
+        state.cast(
+            'resolve',
+            'export_model',
+            state.get('current_job'),
+            [f + offset_frame for f in frames],
+            self._export_path
+        )
+
+class CacheProgressDialog(ProgressDialog):
+    def __init__(self, parent):
+        super().__init__(parent, 'Caching', self._get_total_progress())
+
+    def _get_total_progress(self):
+        shot = state.get('current_shot')
+        body_mode = state.get('body_mode')
+        if body_mode is BodyMode.PLAYBACK:
+            count = len(setting.get_working_camera_ids())
+
+            if state.get('closeup_camera'):
+                count += 1
+
+            return (
+                shot.frame_range[1] - shot.frame_range[0] + 1
+            ) * count
+        elif body_mode is BodyMode.MODEL:
+            return len(state.get('frames'))
+
+    def _prepare(self):
+        body_mode = state.get('body_mode')
+        if body_mode is BodyMode.PLAYBACK:
+            for camera_id in setting.get_working_camera_ids():
+                state.on_changed(f'pixmap_{camera_id}', self.increase)
+            if state.get('closeup_camera'):
+                state.on_changed('pixmap_closeup', self.increase)
+        elif body_mode is BodyMode.MODEL:
+            state.on_changed('opengl_data', self.increase)
+
+    def _on_show(self):
         body_mode = state.get('body_mode')
         if body_mode is BodyMode.PLAYBACK:
             state.cast(
@@ -88,8 +131,6 @@ class CacheProgressDialog(QDialog):
         elif body_mode is BodyMode.MODEL:
             state.cast('resolve', 'cache_whole_job')
         state.set('caching', True)
-        event.accept()
 
-    def closeEvent(self, event):
+    def _on_close(self):
         state.set('caching', False)
-        event.accept()

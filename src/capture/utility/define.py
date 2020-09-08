@@ -39,6 +39,7 @@ class UIEventType(Enum):
     DEADLINE_STATUS = auto()
     HAS_ARDUINO = auto()
     CALI_LIST = auto()
+    TICK_EXPORT = auto()
 
 
 class BodyMode(Enum):

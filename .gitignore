@@ -1,6 +1,7 @@
 .idea/workspace.xml
 .idea/tasks.xml
 **/.python/
+**/.python37/
 deadline/module
 *.skb
 

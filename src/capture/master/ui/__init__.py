@@ -44,13 +44,12 @@ class MasterUI(threading.Thread):
         log.info('Initialize UI')
         main_window = MainWindow()
         self._main = main_window
-        # self._main.show()
 
         self._lock.acquire()
         self._lock.notify()
         self._lock.release()
 
-        app.exec_()
+        result = app.exec_()
 
     def show(self):
         self._main.dispatch_event(UIEventType.UI_SHOW)

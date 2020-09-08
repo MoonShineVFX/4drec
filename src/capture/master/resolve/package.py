@@ -31,6 +31,11 @@ class ResolvePackage:
         self._job_id = job_id
         self._frame = frame
 
+    def get_name(self):
+        if self._frame is None:
+            return f'{self._job_id}_rig'
+        return f'{self._job_id}_{self._frame:08d}'
+
     def get_meta(self):
         return self._job_id, self._frame
 

@@ -1,15 +1,14 @@
-from utility.message import message_manager
-from utility.logger import log
-from utility.define import MessageType
-
-from .ui import ui  # 初始化 UI
-from .hardware_trigger import hardware_trigger
-from .camera import camera_manager
-from .resolve import resolve_manager
-
-
 def start_master():
     """master 總啟動程序"""
+    from utility.message import message_manager
+    from utility.logger import log
+    from utility.define import MessageType
+
+    from .ui import ui  # 初始化 UI
+    from .hardware_trigger import hardware_trigger
+    from .camera import camera_manager
+    from .resolve import resolve_manager
+
     log.info('Start Master')
     ui.show()
 

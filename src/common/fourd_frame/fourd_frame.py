@@ -4,7 +4,7 @@ import numpy as np
 import struct
 import json
 
-from common.jpeg_coder import jpeg_coder
+from common.jpeg_coder import jpeg_coder, TJPF_RGB
 
 
 class FourdFrameManager:
@@ -185,11 +185,31 @@ class FourdFrame:
             self._geo_data = [arr[:, :3], arr[:, 3:]]
         return self._geo_data
 
-    def get_texture_data(self):
+    def get_texture_data(self, raw=False):
+        if raw:
+            texture_file = self.get_file_data('texture')
+            texture_data = jpeg_coder.decode(texture_file, TJPF_RGB)
+            return jpeg_coder.encode(texture_data)
         if self._texture_data is None:
             texture_file = self.get_file_data('texture')
             self._texture_data = jpeg_coder.decode(texture_file)
         return self._texture_data
+
+    def get_obj_data(self):
+        pos_list, uv_list = self.get_geo_data()
+
+        uv_list = uv_list.copy()
+        uv_list -= [0, 1.0]
+        uv_list *= [1, -1]
+
+        pos_strings = [f'v {x} {y} {z}' for x, y, z in pos_list]
+        uv_strings = [f'vt {u} {v}' for u, v in uv_list]
+        face_strings = [f'f {f}/{f} {f + 1}/{f + 1} {f + 2}/{f + 2}' for f in range(1, pos_list.shape[0], 3)]
+
+        obj_data = ['g'] + pos_strings + uv_strings + ['g'] + face_strings
+        obj_data = '\n'.join(obj_data)
+
+        return obj_data
 
     def get_submit_data(self):
         if self._submit_data is None:

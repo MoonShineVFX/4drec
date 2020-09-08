@@ -13,6 +13,7 @@ class ModelView(QWidget):
 
     def __init__(self):
         super().__init__()
+
         self._interface = ModelInterface()
         self._core = OpenGLCore(self, self._interface)
         self._interface.setParent(self)
