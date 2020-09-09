@@ -182,7 +182,7 @@ class CameraConnector(Process):
         self._log.info(f'Change to state: {state.name}')
         self._state = state
 
-    def get_shot_file_path(self, shot_id):
+    def get_shot_file_path_for_recording(self, shot_id):
         """取得 shot 的檔案位置
 
         Args:
@@ -228,7 +228,7 @@ class CameraConnector(Process):
         self._log.info('Start recording')
         shot_meta = CameraShotMeta(
             {'shot_id': shot_id, 'camera_id': self._id, 'is_cali': is_cali},
-            self.get_shot_file_path
+            self.get_shot_file_path_for_recording(shot_id)
         )
         self._recorder = CameraRecorder(shot_meta, self._log)
         self._is_recording = True
@@ -272,7 +272,10 @@ class CameraConnector(Process):
             parms: {camera_id, shot_id, frame, quality, scale_length}
 
         """
-        meta = CameraShotMeta(parms, self.get_shot_file_path)
+        meta = CameraShotMeta(
+            parms,
+            setting.get_shot_file_path(parms['shot_id'], parms['camera_id'])
+        )
         self._log.info(f'Load frame {meta.frame} from {meta.shot_id}')
 
         self._shot_loader.add_task(meta)
@@ -299,7 +302,7 @@ class CameraConnector(Process):
             shot_id: Shot ID
 
         """
-        shot_file_path = self.get_shot_file_path(shot_id)
+        shot_file_path = setting.get_shot_file_path(shot_id, self._id)
         self._log.info(f'Remove shot file: {shot_id}')
 
         def remove_shot_file():

@@ -95,6 +95,8 @@ cameras:
     number: 46
   '20114300':
     number: 47
+  '20114292':
+    number: 48
 
 truss_positions:
   A:
@@ -123,7 +125,7 @@ truss_positions:
     - 19
     -
     - 21
-    -
+    - 48
     - 42
   E:
     - 24

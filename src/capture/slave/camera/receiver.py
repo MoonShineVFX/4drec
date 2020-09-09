@@ -160,7 +160,7 @@ class Receiver(MixThread):
 
         # 蒐集檔案路徑
         shot_file_paths = {
-            self._camera_connector.get_id(): self._camera_connector.get_shot_file_path(shot_id)
+            self._camera_connector.get_id(): self._camera_connector.get_shot_file_path_for_recording(shot_id)
         }
 
         self._camera_connector.add_submit_task((

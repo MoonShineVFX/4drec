@@ -1,10 +1,6 @@
 import numpy as np
 import struct
 import io
-import os
-
-from utility.logger import log
-from utility.setting import setting
 
 from .image import CameraImage
 
@@ -210,10 +206,10 @@ class CameraShotMeta():
 
     """
 
-    def __init__(self, parms, get_shot_file_path):
+    def __init__(self, parms, shot_file_path):
         self._parms = parms  # 參數儲存
         # shot 檔案路徑
-        self._shot_file_path = get_shot_file_path(self._parms['shot_id'])
+        self._shot_file_path = shot_file_path
 
     def __getattr__(self, prop):
         return self._parms[prop]

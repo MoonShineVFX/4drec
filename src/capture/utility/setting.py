@@ -84,6 +84,14 @@ class SettingManager(CameraStructure):
         folder = self.record.folder_name
         return f'{drive}:/{folder}/'
 
+    def get_shot_file_path(self, shot_id, camera_id):
+        folder = self.record.folder_name
+        for drive in self.record.drives:
+            file_path = f'{drive}:/{folder}/{shot_id}_{camera_id}'
+            if os.path.isfile(file_path + '.4dr'):
+                return file_path
+        return None
+
     def get_slave_cameras_count(self):
         camera_count = 0
         slave_index = self.get_slave_index()
