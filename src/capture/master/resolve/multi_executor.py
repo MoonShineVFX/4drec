@@ -51,7 +51,8 @@ class MultiExecutor(threading.Thread):
 
             for future in as_completed(future_list):
                 package = future.result()
-                self._manager.save_package(package)
+                if package is not None:
+                    self._manager.save_package(package)
                 self._manager.send_ui(None)
 
     def export_all(self, tasks):

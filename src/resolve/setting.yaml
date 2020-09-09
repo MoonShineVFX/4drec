@@ -23,4 +23,4 @@ submit_parameters:
     max: 1.0
     type: 'float'
 
-src_path: '//4dk-mst/share/4drec/src/'
+src_path: 'Q:/app/4drec/src/'

@@ -2,7 +2,7 @@ import sys
 
 
 def __main__():
-    fdrec_path = '//4dk-mst/share/4drec/'
+    fdrec_path = 'Q:/app/4drec/'
     src_path = fdrec_path + 'src/'
     resolve_path = src_path + 'resolve/'
     module_path = fdrec_path + 'deadline/module/'
