@@ -21,15 +21,15 @@ def load_geometry(job_id, cali_id, frame):
     return package
 
 
-def export_geometry(load_path, export_path):
+def export_geometry(load_path, filename, frame, export_path):
     from common.fourd_frame import FourdFrameManager
 
     fourd_frame = FourdFrameManager.load(load_path)
 
-    with open(export_path + '.obj', 'w') as f:
+    with open(f'{export_path}/obj/{filename}_{frame:04d}.obj', 'w') as f:
         f.write(fourd_frame.get_obj_data())
 
-    with open(export_path + '.jpg', 'wb') as f:
+    with open(f'{export_path}/texture/{filename}_{frame:04d}.jpg', 'wb') as f:
         f.write(fourd_frame.get_texture_data(raw=True))
 
 
@@ -58,14 +58,24 @@ class MultiExecutor(threading.Thread):
     def export_all(self, tasks):
         from utility.setting import setting
         import os
+        import re
+        from pathlib import Path
 
-        job_id, frames, export_path = tasks
+        shot_name, job_id, frames, export_path = tasks
         load_path = (
             f'{setting.submit_job_path}{job_id}/export/'
         )
+        offset_frame = frames[0] - 1
+
+        filename = re.sub(r'[^\w\d-]', '_', shot_name)
+        export_path = Path(f'{export_path}/{filename}/')
+        (export_path / 'obj').mkdir(parents=True, exist_ok=True)
+        (export_path / 'texture').mkdir(parents=True, exist_ok=True)
+
         with ProcessPoolExecutor() as executor:
             future_list = []
             for f in frames:
+                offset_f = f - offset_frame
                 file_path = f'{load_path}{f:06d}.4df'
 
                 if not os.path.isfile(file_path):
@@ -75,7 +85,9 @@ class MultiExecutor(threading.Thread):
                 future = executor.submit(
                     export_geometry,
                     file_path,
-                    f'{export_path}/{f:06d}'
+                    filename,
+                    offset_f,
+                    str(export_path)
                 )
                 future_list.append(future)
 

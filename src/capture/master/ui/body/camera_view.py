@@ -23,6 +23,7 @@ class CameraViewLayout(LayoutWidget):
 
         state.on_changed('recording', self._toggle_recording)
         state.on_changed('closeup_camera', self._update)
+        state.on_changed('key', self._on_key_pressed)
 
     def _setup_ui(self):
         self._generate_camera_views()
@@ -83,6 +84,13 @@ class CameraViewLayout(LayoutWidget):
             painter = QPainter(self)
             painter.setPen(QPen(Qt.red, 4))
             painter.drawRect(QRect(2, 2, self.width() - 4, self.height() - 4))
+
+    def _on_key_pressed(self):
+        key = state.get('key')
+        if key == Qt.Key_Left:
+            pass
+        elif key == Qt.Key_Right:
+            pass
 
 
 class CameraPage(LayoutWidget):

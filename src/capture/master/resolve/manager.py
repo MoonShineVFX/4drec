@@ -117,9 +117,10 @@ class ResolveManager(threading.Thread):
             else:
                 self._add_task(package)
 
-    def export_model(self, job, frames, export_path):
+    def export_model(self, shot, job, frames, export_path):
+        shot_name = shot.name
         job_id = job.get_id()
         self._multi_executor.add_task(
             'export_all',
-            (job_id, frames, export_path)
+            (shot_name, job_id, frames, export_path)
         )
