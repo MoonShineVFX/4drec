@@ -1,13 +1,14 @@
 import sys
 import os
 import ctypes
+import time
 
 
 def start():
     """根據 bat 產生的 argument 去執行對應的程式(master / slave)"""
 
     # 檢查參數只有一個
-    if len(sys.argv) != 2:
+    if len(sys.argv) < 2:
         print('>> Invalid argument count')
         return
 
@@ -29,6 +30,11 @@ def start():
         from master.master import start_master
         start_master()
     elif _4DREC_TYPE == 'SLAVE':
+        # delay from restart
+        if len(sys.argv) >= 3:
+            delay_seconds = int(sys.argv[2])
+            print(f'Wait {delay_seconds}s from restart.')
+            time.sleep(delay_seconds)
         from slave.slave import start_slave
         start_slave()
 
