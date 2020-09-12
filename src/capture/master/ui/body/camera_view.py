@@ -86,11 +86,33 @@ class CameraViewLayout(LayoutWidget):
             painter.drawRect(QRect(2, 2, self.width() - 4, self.height() - 4))
 
     def _on_key_pressed(self):
+        if not self.isVisible():
+            return
         key = state.get('key')
-        if key == Qt.Key_Left:
-            pass
-        elif key == Qt.Key_Right:
-            pass
+        if key == Qt.Key_Up:
+            self._change_closeup(-1)
+        elif key == Qt.Key_Down:
+            self._change_closeup(1)
+        elif key == Qt.Key_Escape:
+            closeup_camera = state.get('closeup_camera')
+            if closeup_camera is not None:
+                state.set('closeup_camera', None)
+
+    def _change_closeup(self, step):
+        closeup_camera = state.get('closeup_camera')
+        if closeup_camera is None:
+            return
+
+        camera_ids = setting.get_working_camera_ids()
+        idx = camera_ids.index(closeup_camera)
+        idx += step
+
+        if idx >= len(camera_ids):
+            idx = 0
+        elif idx < 0:
+            idx = len(camera_ids) - 1
+
+        state.set('closeup_camera', camera_ids[idx])
 
 
 class CameraPage(LayoutWidget):

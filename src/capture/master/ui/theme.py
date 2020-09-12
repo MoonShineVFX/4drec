@@ -2,6 +2,18 @@ from PyQt5.Qt import QPalette, QColor, QFontDatabase, QFont
 
 
 def apply_theme(app):
+    app.setStyle('Fusion')
+
+    # Font
+    font_database = QFontDatabase()
+    font_database.addApplicationFont('source/ui/noto.ttf')
+    app.setFont(QFont('Noto Sans CJK TC Regular', weight=QFont.Normal))
+
+    # QSS
+    with open('source/ui/style.qss') as stylesheet:
+        app.setStyleSheet(stylesheet.read())
+
+    # palette
     new_palette = QPalette()
 
     # base
@@ -34,16 +46,4 @@ def apply_theme(app):
                          QColor(80, 80, 80))
     new_palette.setColor(QPalette.Disabled, QPalette.HighlightedText,
                          QColor(127, 127, 127))
-
     app.setPalette(new_palette)
-
-    app.setStyle('Fusion')
-
-    # Font
-    font_database = QFontDatabase()
-    font_database.addApplicationFont('source/ui/noto.ttf')
-    app.setFont(QFont('Noto Sans CJK TC Regular', weight=QFont.Normal))
-
-    # QSS
-    with open('source/ui/style.qss') as stylesheet:
-        app.setStyleSheet(stylesheet.read())

@@ -313,6 +313,29 @@ class PlaybackSlider(QSlider, EntityBinder):
         self._setup_ui()
         state.on_changed('crop_range', self._update)
         state.on_changed('Crop', self._update)
+        state.on_changed('key', self._on_key_pressed)
+
+    def _on_key_pressed(self):
+        if not self.isVisible():
+            return
+        key = state.get('key')
+
+        if key == Qt.Key_Left:
+            self._change_slider_position(-1)
+        elif key == Qt.Key_Right:
+            self._change_slider_position(1)
+        else:
+            return
+
+    def _change_slider_position(self, step):
+        slider_position = self.sliderPosition()
+        slider_position += step
+        if slider_position < self.minimum():
+            slider_position = self.maximum()
+        elif slider_position > self.maximum():
+            slider_position = self.minimum()
+
+        self.setSliderPosition(slider_position)
 
     def _update(self):
         if not state.get('caching') and self.isVisible():
@@ -320,6 +343,7 @@ class PlaybackSlider(QSlider, EntityBinder):
 
     def _setup_ui(self):
         self.setStyleSheet(self._default)
+        self.setFocusPolicy(Qt.NoFocus)
 
         cw, ch, _ = self._crop_size
         path = QPainterPath()

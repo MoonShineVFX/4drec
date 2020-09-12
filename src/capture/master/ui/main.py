@@ -1,5 +1,5 @@
 import sys
-from PyQt5.Qt import QMainWindow, QApplication
+from PyQt5.Qt import QMainWindow, QApplication, Qt, QWidget
 
 from utility.define import UIEventType, BodyMode, CameraState
 from utility.logger import log
@@ -27,6 +27,14 @@ class MainWindow(QMainWindow):
 
         # UI
         self._setup_ui()
+        self._setChildrenFocusPolicy(Qt.NoFocus)
+
+    def _setChildrenFocusPolicy (self, policy):
+        def recursiveSetChildFocusPolicy (parentQWidget):
+            for childQWidget in parentQWidget.findChildren(QWidget):
+                childQWidget.setFocusPolicy(policy)
+                recursiveSetChildFocusPolicy(childQWidget)
+        recursiveSetChildFocusPolicy(self)
 
     def _setup_ui(self):
         log.info('create widgets')

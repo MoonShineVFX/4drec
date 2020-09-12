@@ -6,7 +6,7 @@ reference:
 
 clip:
   height: 3
-  diameter: 3.5
+  diameter: 4
   ground: 0.01
 
 submit_parameters:
