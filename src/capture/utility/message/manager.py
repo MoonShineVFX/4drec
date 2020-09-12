@@ -137,7 +137,6 @@ class MessageManager(MixThread):
                     connected = False  # connected 的設置是避免不斷報錯
                     if error.errno == 10054:
                         if current_process().name == 'MainProcess':
-                            # restart()
                             log.info('hihi')
 
                 self._node.clear()

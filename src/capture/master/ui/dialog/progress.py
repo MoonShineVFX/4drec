@@ -53,8 +53,8 @@ class ProgressDialog(QDialog):
     def _prepare(self):
         return
 
-    def increase(self):
-        self._progress_bar.setValue(self._progress_bar.value() + 1)
+    def increase(self, step=1):
+        self._progress_bar.setValue(self._progress_bar.value() + step)
 
         if self._progress_bar.value() == self._progress_bar.maximum():
             self.close()
@@ -135,3 +135,31 @@ class CacheProgressDialog(ProgressDialog):
 
     def _on_close(self):
         state.set('caching', False)
+
+
+class SubmitProgressDialog(ProgressDialog):
+    def __init__(self, parent, job_name, job_frames, job_parms):
+        camera_count = len(setting.get_working_camera_ids())
+        super().__init__(parent, 'Submitting', len(job_frames) * camera_count)
+        self._job_name = job_name
+        self._job_frames = job_frames
+        self._job_parms = job_parms
+
+    def _prepare(self):
+        state.on_changed('tick_submit', self._on_submit)
+
+    def _on_submit(self):
+        submit_count = state.get('tick_submit')
+        current_count = self._progress_bar.value()
+        if current_count >= submit_count:
+            return
+        self.increase(submit_count - current_count)
+
+    def _on_show(self):
+        state.cast(
+            'camera',
+            'submit_shot',
+            self._job_name,
+            self._job_frames,
+            self._job_parms
+        )

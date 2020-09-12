@@ -1,3 +1,5 @@
+import time
+
 from utility.setting import setting
 from utility.message import message_manager, Message
 from utility.logger import log
@@ -337,6 +339,7 @@ class CameraManager():
         if self._is_capturing and message is not None:
             node = message.unpack()
             log.warning(f'Slave [{node.get_name()}] down, restart cameras')
+            time.sleep(1)
             message_manager.send_message(MessageType.MASTER_DOWN)
 
         self._is_capturing = False

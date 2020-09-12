@@ -3,7 +3,7 @@ from PyQt5.Qt import QFileDialog
 from master.ui.custom_widgets import LayoutWidget, PushButton
 from master.ui.dialog import CacheProgressDialog
 from master.ui.popup import popup
-from master.ui.dialog import ShotSubmitDialog
+from master.ui.dialog import ShotSubmitDialog, SubmitProgressDialog
 from master.ui.state import state
 
 from .support_button import SupportButtonGroup
@@ -93,11 +93,13 @@ class SubmitButton(PushButton):
                 result = popup(dialog=ShotSubmitDialog)
 
                 if result:
-                    state.cast(
-                        'camera',
-                        'submit_shot',
-                        result['name'], result['frames'],
-                        result['parms']
+                    popup(
+                        dialog=SubmitProgressDialog,
+                        dialog_args=(
+                            result['name'],
+                            result['frames'],
+                            result['parms']
+                        )
                     )
             else:
                 state.cast(

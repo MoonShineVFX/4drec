@@ -74,6 +74,7 @@ class UIState():
         for camera_id in setting.get_working_camera_ids():
             self._state[f'pixmap_{camera_id}'] = None
         self._state['pixmap_closeup'] = None
+        self._state['tick_submit'] = None
 
         # model
         self._state['opengl_data'] = None

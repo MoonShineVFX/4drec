@@ -3,6 +3,7 @@ import PySpin
 from utility.message import message_manager
 from utility.mix_thread import MixThread
 from utility.define import MessageType
+from utility.setting import setting
 
 
 class Receiver(MixThread):
@@ -46,8 +47,11 @@ class Receiver(MixThread):
                 break
 
         self._log.warning('Master down, stop camera system')
-        if self._camera_connector is not None:
+
+        try:
             self._camera_connector.kill()
+        except AttributeError as e:
+            self._log.warning(e)
 
     def _toggle_live_view(self, message):
         """開關即時預覽
@@ -160,8 +164,9 @@ class Receiver(MixThread):
         frames = parms['frames']
 
         # 蒐集檔案路徑
+        camera_id = self._camera_connector.get_id()
         shot_file_paths = {
-            self._camera_connector.get_id(): self._camera_connector.get_shot_file_path_for_recording(shot_id)
+            camera_id: setting.get_shot_file_path(shot_id, camera_id)
         }
 
         self._camera_connector.add_submit_task((

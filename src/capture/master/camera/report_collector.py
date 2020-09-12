@@ -2,7 +2,7 @@ from time import perf_counter
 
 from utility.setting import setting
 from utility.logger import log
-from utility.define import MessageType
+from utility.define import MessageType, UIEventType
 
 from master.projects import project_manager
 
@@ -232,39 +232,30 @@ class SubmitReportContainer(ReportContainer):
         self._frames = frames  # 影格範圍
         self._parameters = parameters
         self._progress_list = {}  # 進度表{相機ID: 進度(0~1)}
-
-        self._current_progress = 0.0  # 給 log 用
+        self._complete_check_list = {}
 
         # 先建立對應表
         for camera_id in setting.get_working_camera_ids():
-            self._progress_list[camera_id] = 0.0
+            self._progress_list[camera_id] = 0
+            self._complete_check_list[camera_id] = False
 
     def _import_report(self, report):
         """匯入報告"""
+        from master.ui import ui
+
         progress = report['progress']
-        percent = progress[0] / progress[1]
-        self._progress_list[report['camera_id']] = percent
+        self._progress_list[report['camera_id']] = progress[0]
+        self._complete_check_list[report['camera_id']] = progress[0] == progress[1]
+
+        ui.dispatch_event(
+            UIEventType.TICK_SUBMIT,
+            sum(self._progress_list.values())
+        )
 
     def _summarize_condition(self):
         """總結條件，全部傳輸進度都完成"""
-        # 找出平均值
-        progress_list = [p for p in self._progress_list.values()]
-        avg_progress = sum(progress_list) / len(progress_list)
-
-        # 如果進度前進 10 %，log 顯示
-        if avg_progress - self._current_progress > 0.1:
-            log.debug(
-                f'Shot {self._shot_id} transfer progress: '
-                f'{avg_progress * 100:.1f}%'
-            )
-            self._current_progress = avg_progress
-
         # 全部完成即為 1
-        if avg_progress == 1.0:
-            log.debug(
-                f'Shot {self._shot_id} transfer progress: '
-                'Done'
-            )
+        if all(self._complete_check_list.values()):
             return True
 
         return False

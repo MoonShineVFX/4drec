@@ -201,6 +201,9 @@ class MainWindow(QMainWindow):
         elif event.type is UIEventType.TICK_EXPORT:
             state.set('tick_export', event.get_payload())
 
+        elif event.type is UIEventType.TICK_SUBMIT:
+            state.set('tick_submit', event.get_payload())
+
     def _on_project_list_open(self):
         if self._state.get('project_list_dialog'):
             from .projects import ProjectListDialog

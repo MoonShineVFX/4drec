@@ -40,6 +40,7 @@ class UIEventType(Enum):
     HAS_ARDUINO = auto()
     CALI_LIST = auto()
     TICK_EXPORT = auto()
+    TICK_SUBMIT = auto()
 
 
 class BodyMode(Enum):
