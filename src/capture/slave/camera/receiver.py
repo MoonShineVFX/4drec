@@ -46,7 +46,8 @@ class Receiver(MixThread):
                 break
 
         self._log.warning('Master down, stop camera system')
-        self._camera_connector.kill()
+        if self._camera_connector is not None:
+            self._camera_connector.kill()
 
     def _toggle_live_view(self, message):
         """開關即時預覽

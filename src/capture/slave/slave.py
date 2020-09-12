@@ -22,12 +22,15 @@ def start_slave():
     camera_system = CameraSystem()
     camera_system.start()
 
+    is_master_down = False
     while True:
         message = message_manager.receive_message()
         if message.type is MessageType.MASTER_DOWN:
             log.warning('Master Down !!')
+            is_master_down = True
             break
 
     log.info('Stop all connectors')
     camera_system.stop()
-    restart()
+    if is_master_down:
+        restart()
