@@ -18,7 +18,7 @@ class ModelPanel(LayoutWidget):
         state.on_changed('key', self._on_key_pressed)
 
     def _setup_ui(self):
-        self.buttons = SupportButtonGroup(('Cache', 'Rig', 'Wireframe'))
+        self.buttons = SupportButtonGroup(('Cache', 'Rig', 'Wireframe', 'Loop'))
         self.buttons.buttons['Cache'].clicked.connect(self._on_cache)
 
         self.layout().addLayout(

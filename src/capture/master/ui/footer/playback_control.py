@@ -100,6 +100,10 @@ class PlaybackControl(QVBoxLayout):
             state.set('Crop', False)
             state.set('crop_range', [None, None])
 
+        if state.get('Loop'):
+            state.set('Loop', False)
+            state.set('loop_range', [None, None])
+
     def _on_click(self, source):
         if source == 'previous':
             step_pace(forward=False)
@@ -115,21 +119,30 @@ class PlaybackControl(QVBoxLayout):
         elif source == 'next':
             step_pace(forward=True)
         elif source == 'clipleft':
-            crop_range = state.get('crop_range')
-            current_slider_value = state.get('current_slider_value')
-            if crop_range[1] and current_slider_value > crop_range[1]:
-                return
-            else:
-                crop_range[0] = current_slider_value
-                state.set('crop_range', crop_range)
+            self._on_clip_range(0)
         elif source == 'clipright':
-            crop_range = state.get('crop_range')
-            current_slider_value = state.get('current_slider_value')
-            if crop_range[0] and current_slider_value < crop_range[0]:
-                return
-            else:
-                crop_range[1] = current_slider_value
-                state.set('crop_range', crop_range)
+            self._on_clip_range(1)
+
+    def _on_clip_range(self, assign_idx):
+        body_mode = state.get('body_mode')
+        range_state = None
+        if body_mode is BodyMode.PLAYBACK:
+            range_state = 'crop_range'
+        elif body_mode is BodyMode.MODEL:
+            range_state = 'loop_range'
+        clip_range = state.get(range_state)
+        current_slider_value = state.get('current_slider_value')
+        other_idx = abs(assign_idx - 1)
+        other_frame = clip_range[other_idx]
+
+        if other_idx == 1 and other_frame and current_slider_value > other_frame:
+            return
+
+        if other_idx == 0 and other_frame and current_slider_value < other_frame:
+            return
+
+        clip_range[assign_idx] = current_slider_value
+        state.set(range_state, clip_range)
 
     def _on_key_pressed(self):
         if self.parentWidget() is None:
@@ -312,7 +325,9 @@ class PlaybackSlider(QSlider, EntityBinder):
         self._crop_brush = None
         self._setup_ui()
         state.on_changed('crop_range', self._update)
+        state.on_changed('loop_range', self._update)
         state.on_changed('Crop', self._update)
+        state.on_changed('Loop', self._update)
         state.on_changed('key', self._on_key_pressed)
 
     def _on_key_pressed(self):
@@ -452,9 +467,12 @@ class PlaybackSlider(QSlider, EntityBinder):
 
                 i += 1
 
-        if state.get('Crop'):
+        if state.get('Crop') or state.get('Loop'):
             cw, ch, oh = self._crop_size
-            sc, ec = state.get('crop_range')
+            clip_range = 'crop_range'
+            if body_mode is BodyMode.MODEL:
+                clip_range = 'loop_range'
+            sc, ec = state.get(clip_range)
 
             if sc is not None and ec is not None:
                 painter.fillRect(
@@ -502,7 +520,8 @@ class PlaybackButton(ToolButton):
             state.on_changed('playing', self._update_source)
         elif source.startswith('clip'):
             self.setVisible(False)
-            state.on_changed('Crop', self._update_crop_visible)
+            state.on_changed('Crop', self._update_clip_visible)
+            state.on_changed('Loop', self._update_clip_visible)
 
     def sizeHint(self):
         return QSize(26, 26)
@@ -513,6 +532,11 @@ class PlaybackButton(ToolButton):
         else:
             self.change_source('play')
 
-    def _update_crop_visible(self):
-        crop = state.get('Crop')
-        self.setVisible(crop)
+    def _update_clip_visible(self):
+        body_mode = state.get('body_mode')
+        if body_mode is BodyMode.PLAYBACK:
+            crop = state.get('Crop')
+            self.setVisible(crop)
+        elif body_mode is BodyMode.MODEL:
+            loop = state.get('Loop')
+            self.setVisible(loop)

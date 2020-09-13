@@ -8,7 +8,7 @@ from master.ui.state import state
 
 class SupportButtonGroup(QHBoxLayout):
     _checkable_list = [
-        'Serial', 'Calibrate', 'Focus', 'Rig', 'Wireframe', 'Crop'
+        'Serial', 'Calibrate', 'Focus', 'Rig', 'Wireframe', 'Crop', 'Loop'
     ]
 
     def __init__(self, button_texts):

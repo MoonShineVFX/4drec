@@ -53,7 +53,7 @@ class UIState():
         # parameter
         for key, parm in setting.camera_parameters.items():
             self._state[key] = parm['default']
-        self._state['parm_outside'] = False;
+        self._state['parm_outside'] = False
 
         # playbar
         self._state['current_slider_value'] = 0
@@ -61,6 +61,7 @@ class UIState():
         self._state['offset_frame'] = 0
         self._state['playing'] = False
         self._state['crop_range'] = [None, None]
+        self._state['loop_range'] = [None, None]
 
         # support
         self._state['Calibrate'] = False
@@ -69,6 +70,7 @@ class UIState():
         self._state['Crop'] = False
         self._state['Rig'] = False
         self._state['Wireframe'] = False
+        self._state['Loop'] = False
 
         # pixmap
         for camera_id in setting.get_working_camera_ids():
@@ -149,17 +151,26 @@ state = UIState()
 
 
 def get_slider_range():
-    frames = state.get('frames')
-    sc, ec = state.get('crop_range')
+    body_mode = state.get('body_mode')
+    min_slider_value, max_slider_value = None, None
 
-    if state.get('Crop') and sc is not None and ec is not None:
-        max_slider_value = ec
-        min_slider_value = sc
-    else:
+    if (
+        body_mode is BodyMode.PLAYBACK and
+        state.get('Crop')
+    ):
+        min_slider_value, max_slider_value = state.get('crop_range')
+    elif (
+        body_mode is BodyMode.MODEL and
+        state.get('Loop')
+    ):
+        min_slider_value, max_slider_value = state.get('loop_range')
+
+    if min_slider_value is None or max_slider_value is None:
+        frames = state.get('frames')
         max_slider_value = len(frames) - 1
         min_slider_value = 0
 
-    return (min_slider_value, max_slider_value)
+    return min_slider_value, max_slider_value
 
 
 def step_pace(forward=True, stop=True):

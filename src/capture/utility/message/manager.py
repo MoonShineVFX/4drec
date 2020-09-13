@@ -3,7 +3,6 @@ import queue
 import time
 from multiprocessing import current_process
 
-from utility.restart import restart
 from utility.mix_thread import MixThread
 from utility.setting import setting
 from utility.logger import log
