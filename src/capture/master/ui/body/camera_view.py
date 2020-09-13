@@ -187,7 +187,7 @@ class CameraView(LayoutWidget):
             self._image.set_map(pixmap)
 
     def _setup_ui(self):
-        self.setMinimumSize(100, 100)
+        self.setMinimumSize(120, 100)
 
         self._image = CameraImage(self._resize_leader)
         self.addWidget(self._image)
@@ -213,6 +213,9 @@ class CameraImage(QWidget):
     def __init__(self, resize_leader):
         super().__init__()
         self._pixmap = None
+        self._paint_rect = QRect(
+            0, 0, self.width(), self.height()
+        )
 
         self._hover = False
         self._inspect = False
@@ -241,14 +244,27 @@ class CameraImage(QWidget):
             self.update()
 
     def resizeEvent(self, event):
+        # TODO inspect condition has some bug to find out. aspect not work as i want
+        if self.width() > self.height():
+            width = self.height() / self._aspect_ratio
+            width_margin = (self.width() - width) / 2
+            self._paint_rect = QRect(
+                width_margin, 0,
+                width, self.height()
+            )
+        else:
+            height = self.width() * self._aspect_ratio
+            height_margin = (self.height() - height) / 2
+            self._paint_rect = QRect(
+                0, height_margin,
+                self.width(), height
+            )
+
         if (
             self._resize_leader and
             self.isVisible()
         ):
-            value = max(
-                event.size().width(),
-                event.size().height()
-            )
+            value = self._paint_rect.width()
             if value > 0:
                 state.set(
                     'live_view_size',
@@ -265,38 +281,31 @@ class CameraImage(QWidget):
         self.unsetCursor()
 
     def paintEvent(self, event):
-        height = self.width() * self._aspect_ratio
-        rect = QRect(
-            0, self.height() - height,
-            self.width(), height
-        )
+        painter = QPainter(self)
 
         if self._inspect:
-            painter = QPainter(self)
             painter.drawPixmap(
                 (self.width() - self._inspect_map.width()) / 2,
-                rect.y() + (height - self._inspect_map.height()) / 2,
+                (self.height() - self._inspect_map.height()) / 2,
                 self._inspect_map
             )
             return
 
-        painter = QPainter(self)
-
-        if self._pixmap.width() > self.width():
+        if self._pixmap.width() > 50:
             painter.setRenderHint(QPainter.SmoothPixmapTransform)
             painter.drawPixmap(
-                rect, self._pixmap
+                self._paint_rect, self._pixmap
             )
         else:
             painter.drawPixmap(
                 (self.width() - self._pixmap.width()) / 2,
-                rect.y() + (height - self._pixmap.height()) / 2,
+                (self.height() - self._pixmap.height()) / 2,
                 self._pixmap
             )
 
         if self._hover:
             painter.setPen(QPen(self.palette().highlight().color(), 2))
-            painter.drawRect(rect)
+            painter.drawRect(self._paint_rect)
 
 
 class CameraViewInfo(LayoutWidget):
