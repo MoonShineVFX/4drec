@@ -244,8 +244,8 @@ class CameraImage(QWidget):
             self.update()
 
     def resizeEvent(self, event):
-        # TODO inspect condition has some bug to find out. aspect not work as i want
-        if self.width() > self.height():
+        if self.width() * setting.camera_resolution[1] >\
+                self.height() * setting.camera_resolution[0]:
             width = self.height() / self._aspect_ratio
             width_margin = (self.width() - width) / 2
             self._paint_rect = QRect(
