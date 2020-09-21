@@ -18,11 +18,7 @@ class DepthMapEstimation(Flow):
             args={
                 'input': ClipLandmarks.get_file_path('sfm'),
                 'imagesFolder': PrepareDenseScene.get_folder_path(),
-                'downscale': process.setting.get_parameters()['depth_scale'],
                 'output': self.get_folder_path(),
-                # add
-                'sgmMaxTCams': 4,
-                'refineMaxTCams': 4,
-                'exportIntermediateResults': 0
-            }
+            },
+            override=self.get_parameters()
         )

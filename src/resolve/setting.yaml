@@ -4,23 +4,60 @@ reference:
     - ['A0', 0.15117]
     - ['E0', 0.15198]
 
-clip:
+clip_range:
   height: 3
   diameter: 4
   ground: 0.01
 
-submit_parameters:
-  - desc: 'Depth Quality (1 is best)'
-    name: 'depth_scale'
-    default: 2
-    min: 1
-    max: 10
-    type: 'int'
-  - desc: 'Mesh Reduce Ratio (1 is original)'
-    name: 'mesh_reduce_ratio'
-    default: 0.3
-    min: 0.1
-    max: 1.0
-    type: 'float'
+mesh_reduce_ratio: 0.3
+
+flows:
+  ConstructFromAruco:
+    aruco_size: 0.0893
+    aruco_dict: 'ARUCO_MIP_36h12'
+  FeatureExtraction:
+    describerTypes: 'akaze'
+    describerPreset: 'ultra'
+    forceCpuExtraction: 1
+  FeatureMatching:
+    describerTypes: 'akaze'
+  StructureFromMotion:
+    describerTypes: 'akaze'
+    useLocalBA: 0
+    lockScenePreviouslyReconstructed: 0
+    interFileExtension: '.abc'
+  DepthMapEstimation:
+    downscale: 2
+    sgmMaxTCams: 4
+    refineMaxTCams: 4
+    exportIntermediateResults: 0
+  DepthMapFiltering:
+    minNumOfConsistentCams: 2
+    minNumOfConsistentCamsWithLowSimilarity: 3
+    nNearestCams: 8
+  Meshing:
+    maxPoints: 5000000
+    # minStep: 2,
+    # simGaussianSizeInit: 5,
+    # simGaussianSize: 5,
+    # maxPoints: 50000000,
+    # estimateSpaceMinObservations: 2,
+    # pixSizeMarginInitCoef: 1,
+    # refineFuse: 1
+  MeshFiltering:
+    iterations: 10
+    lambda: 1
+    removeLargeTrianglesFactor: 30
+  MeshResampling:
+    simplificationFactor: 1
+  Texturing:
+    textureSide: 4096
+    useUDIM: 1
+    downscale: 1
+    unwrapMethod: 'Basic'
+    # 'useScore': 0,
+    # 'bestScoreThreshold': 0,
+    # 'angleHardThreshold': 0,
+    # 'forceVisibleByAllVertices': 1,
 
 src_path: 'Q:/app/4drec/src/'

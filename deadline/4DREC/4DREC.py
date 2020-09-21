@@ -6,6 +6,7 @@ from Deadline.Plugins import *
 from Deadline.Scripting import *
 
 import launch
+import json
 from process import ResolveProcess
 from define import ResolveEvent, ResolveStep
 from flows import flow_dict
@@ -92,11 +93,11 @@ class FourDRecPlugin(DeadlinePlugin):
             gpu_core=gpu_core
         )
 
-        for pname in self._process.setting.get_parameters():
-            value = job.GetJobExtraInfoKeyValueWithDefault(pname, None)
-            if value is None:
-                continue
-            self._process.setting.apply_parameter(pname, value)
+        parameters = job.GetJobExtraInfoKeyValueWithDefault(
+            'parameters', None
+        )
+        if parameters is not None:
+            self._process.setting.from_json(parameters)
 
         self._process.on_event_emit(self._on_event_emit)
         self._process.run()

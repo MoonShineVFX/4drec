@@ -52,11 +52,9 @@ class FeatureExtraction(Flow):
             ),
             args={
                 'input': ConvertSFM.get_file_path('sfm'),
-                'describerTypes': 'akaze',
-                'describerPreset': 'ultra',
-                'forceCpuExtraction': 1,
                 'output': self.get_folder_path()
-            }
+            },
+            override=self.get_parameters()
         )
 
 
@@ -73,9 +71,9 @@ class FeatureMatching(Flow):
             args={
                 'input': ConvertSFM.get_file_path('sfm'),
                 'featuresFolders': FeatureExtraction.get_folder_path(),
-                'describerTypes': 'akaze',
-                'output': self.get_folder_path()
-            }
+                'output': self.get_folder_path(),
+            },
+            override=self.get_parameters()
         )
 
 
@@ -98,12 +96,9 @@ class StructureFromMotion(Flow):
                 'input': ConvertSFM.get_file_path('sfm'),
                 'featuresFolders': FeatureExtraction.get_folder_path(),
                 'matchesFolders': FeatureMatching.get_folder_path(),
-                'describerTypes': 'akaze',
-                'useLocalBA': 0,
-                'lockScenePreviouslyReconstructed': 0,
-                'interFileExtension': '.abc',
-                'output': self.get_file_path('sfm')
-            }
+                'output': self.get_file_path('sfm'),
+            },
+            override=self.get_parameters()
         )
 
     def _check_force_quit(self, line):
@@ -158,14 +153,14 @@ class ClipLandmarks(PythonFlow):
         for structure in data['structure']:
             x, y, z = [float(x) for x in structure['X']]
             dist = np.sqrt(x * x + z * z)
-            if dist > process.setting.clip.diameter / 2:
-                ratio = process.setting.clip.diameter / 2 / dist
+            if dist > process.setting.clip_range.diameter / 2:
+                ratio = process.setting.clip_range.diameter / 2 / dist
                 structure['X'][0] = x * ratio
                 structure['X'][2] = z * ratio
-            if y > process.setting.clip.height:
-                structure['X'][1] = process.setting.clip.height
-            elif y < process.setting.clip.ground:
-                structure['X'][1] = process.setting.clip.ground
+            if y > process.setting.clip_range.height:
+                structure['X'][1] = process.setting.clip_range.height
+            elif y < process.setting.clip_range.ground:
+                structure['X'][1] = process.setting.clip_range.ground
 
         with open(self.get_file_path('sfm'), 'w') as f:
             json.dump(data, f, indent=4)

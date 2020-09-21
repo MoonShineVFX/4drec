@@ -21,15 +21,10 @@ class DepthMapFiltering(Flow):
             ),
             args={
                 'input': ClipLandmarks.get_file_path('sfm'),
-                'minNumOfConsistentCams': 2,
-                'minNumOfConsistentCamsWithLowSimilarity': 3,
                 'depthMapsFolder': DepthMapEstimation.get_folder_path(),
                 'output': self.get_folder_path(),
-                # add
-                'nNearestCams': 8,
-                # 'pixSizeBall': 1,
-                # 'pixSizeBallWithLowSimilarity': 1
-            }
+            },
+            override=self.get_parameters()
         )
 
 
@@ -54,16 +49,8 @@ class Meshing(Flow):
                 'depthMapsFilterFolder': DepthMapFiltering.get_folder_path(),
                 'output': self.get_file_path('dense'),
                 'outputMesh': self.get_file_path('obj'),
-                # add
-                # 'maxPoints': 120000,
-                # 'minStep': 2,
-                # 'simGaussianSizeInit': 5,
-                # 'simGaussianSize': 5,
-                # 'maxPoints': 50000000,
-                # 'estimateSpaceMinObservations': 2,
-                # 'pixSizeMarginInitCoef': 1,
-                # 'refineFuse': 1
-            }
+            },
+            override=self.get_parameters()
         )
 
     @classmethod
@@ -91,9 +78,6 @@ class MeshFiltering(Flow):
             ),
             args={
                 'input': Meshing.get_file_path('obj'),
-                'iterations': 10,
-                'lambda': 1,
-                'removeLargeTrianglesFactor': 30,
                 'output': self.get_file_path('obj'),
             }
         )
@@ -129,12 +113,12 @@ class MeshClipping(PythonFlow):
 
         # point mask
         radius_list = np.linalg.norm(point_list[:, [0, 2]], axis=1)
-        radius_mask = radius_list < process.setting.clip.diameter / 2
+        radius_mask = radius_list < process.setting.clip_range.diameter / 2
 
         height_list = point_list[:, 1]
         height_mask = (
-            (height_list > process.setting.clip.ground) &
-            (height_list < process.setting.clip.height)
+            (height_list > process.setting.clip_range.ground) &
+            (height_list < process.setting.clip_range.height)
         )
 
         point_mask = radius_mask & height_mask
@@ -163,13 +147,13 @@ class MeshClipping(PythonFlow):
             f.write(data)
 
 
-class MeshDecimate(Flow):
+class MeshResampling(Flow):
     _file = {
         'obj': 'mesh.obj',
     }
 
     def __init__(self):
-        super(MeshDecimate, self).__init__()
+        super(MeshResampling, self).__init__()
 
     def _make_command(self):
         with open(MeshClipping.get_file_path('obj')) as f:
@@ -178,19 +162,19 @@ class MeshDecimate(Flow):
         return FlowCommand(
             execute=(
                 process.setting.alicevision_path +
-                'aliceVision_meshDecimate'
+                'aliceVision_meshResampling'
             ),
             args={
                 'input': MeshClipping.get_file_path('obj'),
                 'maxVertices': int(
                     int(vertex_count) *
                     float(
-                        process.setting.get_parameters()['mesh_reduce_ratio']
+                        process.setting.mesh_reduce_ratio
                     )
                 ),
-                'simplificationFactor': 1,
-                'output': self.get_file_path('obj')
-            }
+                'output': self.get_file_path('obj'),
+            },
+            override=self.get_parameters()
         )
 
 
@@ -211,19 +195,11 @@ class Texturing(Flow):
             ),
             args={
                 'input': Meshing.get_file_path('dense'),
-                'inputMesh': MeshDecimate.get_file_path('obj'),
+                'inputMesh': MeshResampling.get_file_path('obj'),
                 'imagesFolder': PrepareDenseScene.get_folder_path(),
-                'textureSide': 4096,
-                'useUDIM': 1,
-                'downscale': 1,
-                'unwrapMethod': 'Basic',
                 'output': self.get_folder_path(),
-                #add
-                # 'useScore': 0,
-                # 'bestScoreThreshold': 0,
-                # 'angleHardThreshold': 0,
-                # 'forceVisibleByAllVertices': 1,
-            }
+            },
+            override=self.get_parameters()
         )
 
 
@@ -274,7 +250,7 @@ class OptimizeStorage(PythonFlow):
         MeshFiltering._clean_folder()
         MeshClipping._clean_folder()
         Texturing._clean_folder()
-        MeshDecimate._clean_folder()
+        MeshResampling._clean_folder()
         FeatureMatching._clean_folder()
         ClipLandmarks._clean_folder()
         ConvertSFM._clean_folder()

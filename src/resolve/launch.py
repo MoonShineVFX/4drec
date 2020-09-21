@@ -41,7 +41,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '-aruco', '--aruco_path', type=str,
         help='aruco calibration program path, default: //storage03/cache/4DREC/aruco/',
-        default='//storage03/cache/4DREC/aruco/'
+        default='Q:/app/aruco/'
     )
     parser.add_argument(
         '-c', '--cali_path', type=str,
@@ -73,8 +73,12 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '-pyt', '--python_flow', type=str,
-        help='flow to process with python27',
+        help='flow to process with python',
         choices=flow_dict.keys(),
+    )
+    parser.add_argument(
+        '-st', '--setting', type=str,
+        help='setting in json format',
     )
 
     args = parser.parse_args()

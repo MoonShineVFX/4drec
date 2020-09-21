@@ -10,7 +10,7 @@ from .calibrate import (
 from .depth import DepthMapEstimation
 from .mesh import (
     DepthMapFiltering, Meshing, MeshFiltering, MeshClipping,
-    MeshDecimate, Texturing, Package, OptimizeStorage
+    MeshResampling, Texturing, Package, OptimizeStorage
 )
 
 
@@ -27,7 +27,7 @@ flow_pipeline = {
     ResolveStep.DEPTH: [DepthMapEstimation],
     ResolveStep.MESH: [
         DepthMapFiltering, Meshing,  MeshFiltering,
-        MeshClipping, MeshDecimate,
+        MeshClipping, MeshResampling,
         Texturing, Package, OptimizeStorage
     ]
 }

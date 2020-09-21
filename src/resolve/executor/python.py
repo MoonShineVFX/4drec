@@ -6,13 +6,14 @@ from flows import flow_dict
 
 class PythonResolver():
     def __init__(
-        self, frame, shot_path, job_path, cali_path, python_flow
+        self, frame, shot_path, job_path, cali_path, python_flow, setting
     ):
         self._process = ResolveProcess(
             frame, None, None, shot_path, job_path, cali_path, [], []
         )
 
         self._process.on_event_emit(self._on_event_emit)
+        self._process.setting.from_json(setting)
 
         flow_dict[python_flow]().run_python()
         self._process.complete()

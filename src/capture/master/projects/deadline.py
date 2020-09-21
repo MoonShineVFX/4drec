@@ -1,3 +1,5 @@
+import json
+
 from pymongo import MongoClient
 
 from utility.deadline import DeadlineConnect
@@ -56,7 +58,7 @@ def submit_deadline(shot, job):
             'resolve_step': step,
             'shot_path': shot_path,
             'job_path': job_path,
-            **job.parameters
+            'parameters': json.dumps(job.parameters, ensure_ascii=True)
         }
 
         if not is_cali:

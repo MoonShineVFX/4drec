@@ -19,10 +19,13 @@ class SettingManager(CameraStructure):
 
         # 蒐集所有 settings 資料夾的 yaml 檔案
         files = list(glob.glob('settings/*.yaml'))
-        files.append('../resolve/setting.yaml')
         for file in files:
             with open(file, 'r') as f:
                 self._settings.update(yaml.load(f, Loader=yaml.FullLoader))
+
+        # resolve setting
+        with open('../resolve/setting.yaml', 'r') as f:
+            self._settings['resolve'] = yaml.load(f, Loader=yaml.FullLoader)
 
         # 如果是 slave 就建立錄製資料夾
         if not self.is_master():

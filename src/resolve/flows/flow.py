@@ -35,6 +35,14 @@ class Flow(object):
     def get_file_path_with_folder(cls, name, folder):
         return f'{folder}{cls.get_name()}/' + cls._file[name]
 
+    @classmethod
+    def get_parameter(cls, parm_name):
+        return process.setting.flows[cls.get_name()][parm_name]
+
+    @classmethod
+    def get_parameters(cls):
+        return process.setting.flows[cls.get_name()]
+
     def run(self):
         process.log_info(f'\n> Flow [{self.get_name()}] Start')
 
@@ -164,7 +172,8 @@ class PythonFlow(Flow):
                 'shot_path': process.setting.shot_path,
                 'job_path': process.setting.job_path,
                 'cali_path': process.setting.cali_path,
-                'python_flow': self.get_name()
+                'python_flow': self.get_name(),
+                'setting': process.setting.to_argument()
             }
         )
 
@@ -173,9 +182,11 @@ class PythonFlow(Flow):
 
 
 class FlowCommand(object):
-    def __init__(self, execute, args):
+    def __init__(self, execute, args, override=None):
         self._execute = execute
         self._args = args
+        if override is not None:
+            self._args.update(override)
 
     @property
     def execute(self):

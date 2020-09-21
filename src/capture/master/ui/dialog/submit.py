@@ -1,21 +1,39 @@
 from PyQt5.Qt import (
-    QDialog, Qt, QLabel, QDialogButtonBox, QLineEdit, QHBoxLayout,
-    QSpinBox, QDoubleSpinBox, QComboBox
+    QDialog, Qt, QLabel, QDialogButtonBox, QLineEdit, QHBoxLayout, QWidget,
+    QSpinBox, QDoubleSpinBox, QComboBox, QGroupBox, QScrollArea, QVBoxLayout
 )
 
 from utility.setting import setting
 
-from master.ui.custom_widgets import move_center, make_layout, make_split_line
+from master.ui.custom_widgets import (
+    move_center, make_layout, make_split_line
+)
 from master.ui.state import state, get_slider_range
+
+
+def create_submit_parameter_widget(parm_name, parm_value, layer):
+    if layer > 0 or isinstance(parm_value, list):
+        return ShotSubmitContainer(parm_name, parm_value, layer)
+    return ShotSubmitParameter(parm_name, parm_value)
+
+
+class HeaderLineEdit(QLineEdit):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
+class HeaderLabel(QLabel):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
 
 class ShotSubmitDialog(QDialog):
     _default = '''
-    QLabel {
+    HeaderLabel {
       font-size: 14px;
     }
 
-    QLineEdit {
+    HeaderLineEdit {
       font-size: 18px;
       min-height: 30px;
       padding: 4px 16px;
@@ -23,6 +41,19 @@ class ShotSubmitDialog(QDialog):
 
     QDialogButtonBox {
       min-height: 30px;
+    }
+    
+    QScrollArea {
+        min-height: 180px;
+    }
+    
+    QGroupBox {
+        font-weight: 600;
+    }
+    QGroupBox:title {
+        subcontrol-origin: margin;
+        subcontrol-position: top;
+        padding: 0px 8px 0px 4px;
     }
     '''
 
@@ -46,12 +77,12 @@ class ShotSubmitDialog(QDialog):
         )
 
         name_layout = make_layout(spacing=24)
-        label = QLabel('Job Name')
+        label = HeaderLabel('Job Name')
         label.setAlignment(Qt.AlignCenter)
         name_layout.addWidget(label)
 
         name = f'resolve {len(shot.jobs) + 1}'
-        self._text_name = QLineEdit()
+        self._text_name = HeaderLineEdit()
         self._text_name.setAlignment(Qt.AlignRight)
         self._text_name.setText(name)
         self._text_name.setPlaceholderText('Submit Job Name')
@@ -62,13 +93,13 @@ class ShotSubmitDialog(QDialog):
         # --------------
         layout.addWidget(make_split_line())
 
-        label = QLabel(
+        label = HeaderLabel(
             'Frame Range (seperate by comma, space or dash)'
         )
         layout.addWidget(label)
 
         min_slider_value, max_slider_value = get_slider_range()
-        self._text_frames = QLineEdit()
+        self._text_frames = HeaderLineEdit()
         self._text_frames.setAlignment(Qt.AlignCenter)
         self._text_frames.setText(f'{min_slider_value}-{max_slider_value}')
         self._text_frames.setPlaceholderText(
@@ -81,7 +112,7 @@ class ShotSubmitDialog(QDialog):
             margin=0,
             spacing=24
         )
-        label = QLabel('Calibration')
+        label = HeaderLabel('Calibration')
         hlayout.addWidget(label)
 
         self._comboBox = CalibrationComboBox()
@@ -89,13 +120,31 @@ class ShotSubmitDialog(QDialog):
 
         layout.addLayout(hlayout)
 
-        # --------------
-        layout.addWidget(make_split_line())
-
-        for parm in setting.submit_parameters:
-            parm_widget = ShotSubmitParameter(parm)
-            layout.addLayout(parm_widget)
+        # submit parameter
+        submit_widget = QWidget()
+        submit_control = QVBoxLayout()
+        submit_meta = {
+            'reference': 1,
+            'clip_range': 1,
+            'mesh_reduce_ratio': 0,
+            'flows': 2
+        }
+        for parm_name, layer in submit_meta.items():
+            parm_value = setting.resolve[parm_name]
+            parm_widget = create_submit_parameter_widget(
+                parm_name, parm_value, layer
+            )
+            if isinstance(parm_widget, ShotSubmitContainer):
+                submit_control.addWidget(parm_widget)
+            else:
+                submit_control.addLayout(parm_widget)
             self._parms.append(parm_widget)
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        submit_widget.setLayout(submit_control)
+        scroll.setWidget(submit_widget)
+        layout.addWidget(scroll)
 
         buttons = QDialogButtonBox.Ok | QDialogButtonBox.Cancel
         self._buttons = QDialogButtonBox(buttons)
@@ -104,6 +153,8 @@ class ShotSubmitDialog(QDialog):
         layout.addWidget(self._buttons)
 
         self.setLayout(layout)
+
+        self.setMinimumSize(580, 710)
         move_center(self)
 
     def showEvent(self, event):
@@ -132,11 +183,8 @@ class ShotSubmitDialog(QDialog):
 
         parms = {'cali': self._comboBox.currentData()}
         for parm_widget in self._parms:
-            parm = parm_widget.get_parm()
-
-            value = parm[1]
-
-            parms[parm[0]] = value
+            name, value = parm_widget.get_result()
+            parms[name] = value
 
         return {
             'name': self._text_name.text(),
@@ -145,34 +193,113 @@ class ShotSubmitDialog(QDialog):
         }
 
 
-class ShotSubmitParameter(QHBoxLayout):
-    def __init__(self, parm):
-        super().__init__()
-        self._parm = parm
-        self._spin = None
+class ShotSubmitContainer(QGroupBox):
+    def __init__(self, parm_name, parm_value, layer):
+        super().__init__(parm_name)
+        self._parm_name = parm_name
+        self._parm_value = parm_value
+        self._layer = layer
+
+        if isinstance(parm_value, dict):
+            self._children = [
+                create_submit_parameter_widget(p_name, p_value, layer - 1)
+                for p_name, p_value in parm_value.items()
+            ]
+        elif isinstance(parm_value, list):
+            self._children = [
+                ShotSubmitParameter(None, p_value)
+                for p_value in parm_value
+            ]
+
         self._setup_ui()
 
     def _setup_ui(self):
-        label = QLabel(self._parm['desc'])
-        self.addWidget(label)
+        layout = make_layout(
+            horizon=False, margin=8
+        )
 
-        if self._parm['type'] == 'int':
-            self._spin = QSpinBox()
+        for child in self._children:
+            if isinstance(child, ShotSubmitContainer):
+                layout.addWidget(child)
+            else:
+                layout.addLayout(child)
+        self.setLayout(layout)
+
+    def get_result(self):
+        if isinstance(self._parm_value, list):
+            return self._parm_name, [child.get_result() for child in self._children]
+        return self._parm_name, {
+                name: value
+                for name, value in
+                [child.get_result() for child in self._children]
+            }
+
+
+class ShotSubmitParameter(QHBoxLayout):
+    def __init__(self, parm_name, parm_value):
+        super().__init__()
+        self._parm_name = parm_name
+        self._parm_value = parm_value
+        self._input_widget = None
+        self._setup_ui()
+        
+    def _create_widget(self, value):
+        if isinstance(value, str):
+            widget = QLineEdit()
+            widget.setText(value)
+            widget.setPlaceholderText('String Val')
+        elif isinstance(value, list):
+            return [
+                self._create_widget(v)
+                for v in value
+            ]
         else:
-            self._spin = QDoubleSpinBox()
-            self._spin.setDecimals(1)
-            self._spin.setSingleStep(0.1)
+            if isinstance(value, int):
+                widget = QSpinBox()
+            else:
+                widget = QDoubleSpinBox()
+                decimal = str(value)[::-1].find('.')
+                widget.setDecimals(decimal)
+                widget.setSingleStep(pow(10, -decimal))
 
-        self._spin.setMinimum(self._parm['min'])
-        self._spin.setMaximum(self._parm['max'])
-        self._spin.setValue(self._parm['default'])
+            widget.setMinimum(0)
+            widget.setMaximum(9999999)
+            widget.setValue(value)
 
-        self._spin.setFixedWidth(100)
-        self._spin.setAlignment(Qt.AlignRight)
-        self.addWidget(self._spin)
+        widget.setFixedWidth(100)
+        widget.setAlignment(Qt.AlignRight)
+        return widget
 
-    def get_parm(self):
-        return (self._parm['name'], self._spin.value())
+    def _get_widget_value(self, widget):
+        if isinstance(widget, list):
+            return [self._get_widget_value(w) for w in widget]
+        if isinstance(widget, QLineEdit):
+            return widget.text()
+        return widget.value()
+        
+    def _setup_ui(self):
+        margin = 8
+        self.setContentsMargins(margin, margin, margin, margin)
+        self.setSpacing(8)
+        if self._parm_name is not None:
+            label = QLabel(self._parm_name)
+            self.addWidget(label)
+        else:
+            self.addStretch(1)
+        
+        self._input_widget = self._create_widget(self._parm_value)
+
+        if isinstance(self._input_widget, list):
+            for widget in self._input_widget:
+                self.addWidget(widget)
+        else:
+            self.addWidget(self._input_widget)
+
+    def get_result(self):
+        value = self._get_widget_value(self._input_widget)
+        if isinstance(value, list):
+            return value
+        return self._parm_name, value
 
 
 class CalibrationComboBox(QComboBox):

@@ -28,8 +28,8 @@ class ConstructFromAruco(Flow):
             args=[
                 process.setting.shot_path,
                 process.setting.aruco_path + 'cam.yml',
-                0.0893,
-                'ARUCO_MIP_36h12',
+                self.get_parameter('aruco_size'),
+                self.get_parameter('aruco_dict'),
                 self.get_folder_path() + 'out'
             ]
         )

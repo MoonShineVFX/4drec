@@ -2,10 +2,13 @@
 import yaml
 import os
 import sys
+import json
 if sys.version_info[0] < 3:
     from pathlib2 import Path
 else:
     from pathlib import Path
+
+from define import ResolveStep
 
 
 class Setting():
@@ -44,17 +47,6 @@ class Setting():
     def get_job_id(self):
         return Path(self.job_path).stem
 
-    def get_parameters(self):
-        parms = {}
-        for p in self._data['submit_parameters']:
-            parms[p['name']] = p['default']
-        return parms
-
-    def apply_parameter(self, pname, value):
-        for p in self._data['submit_parameters']:
-            if p['name'] == pname:
-                p['default'] = value
-
     def get_environment(self):
         env = os.environ.copy()
         if self.gpu_core != -1:
@@ -72,6 +64,30 @@ class Setting():
         if self.is_cali():
             return f'{self.job_path}'
         return f'{self.job_path}{self.frame:06d}/'
+
+    def to_argument(self):
+        data = self._data.copy()
+        if 'resolve_steps' in data:
+            data['resolve_steps'] = [
+                step.value for step in data['resolve_steps']
+            ]
+        return json.dumps(data, ensure_ascii=True)
+
+    def from_json(self, arg):
+        data = json.loads(arg)
+        if 'resolve_steps' in data:
+            enum_steps = []
+            for step in data['resolve_steps']:
+                result = None
+                for es in ResolveStep:
+                    if es.value == step:
+                        result = es
+                if result is None:
+                    raise KeyError(f'No found key: {step}')
+                enum_steps.append(result)
+            data['resolve_steps'] = enum_steps
+
+        self._data.update(data)
 
 
 class WrapProperty(dict):

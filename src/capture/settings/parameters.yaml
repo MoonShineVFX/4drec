@@ -1,5 +1,4 @@
 camera_parameters:
-
   BalanceRatioBlue:
     min: 0.25
     max: 4.0
