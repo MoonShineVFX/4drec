@@ -1,8 +1,9 @@
 from PyQt5.Qt import (
-    QDialog, QLabel, QDialogButtonBox
+    QDialog, QLabel, QDialogButtonBox, QLayout, QScrollArea,
+    QWidget, QVBoxLayout, Qt
 )
 
-from master.ui.custom_widgets import move_center, make_layout
+from master.ui.custom_widgets import move_center, make_layout, make_split_line
 from master.ui.state import state
 
 
@@ -14,6 +15,11 @@ class CameraParametersDialog(QDialog):
 
     QDialogButtonBox {
       min-height: 30px;
+    }
+    
+    QScrollArea {
+        min-height: 400px;
+        min-width: 400px;
     }
     '''
 
@@ -51,11 +57,28 @@ class CameraParametersDialog(QDialog):
 
                     layout.addLayout(parm_layout)
         # job parms
-        # else:
-        #     self.setWindowTitle(f'[{job.name}] Submit Parameters')
-        #     for key, value in job.parameters:
-        #         if
+        else:
+            self.setWindowTitle(f'[{job.name}] Submit Parameters')
 
+            submit_widget = QWidget()
+            submit_control = make_layout(
+                horizon=False, spacing=8, margin=24
+            )
+
+            for key, value in job.parameters.items():
+                widgets = convert_submit_parm_widgets(key, value, 0)
+                for widget in widgets:
+                    if isinstance(widget, QLayout):
+                        submit_control.addLayout(widget)
+                    else:
+                        submit_control.addWidget(widget)
+
+            scroll = QScrollArea()
+            scroll.setWidgetResizable(False)
+            scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+            submit_widget.setLayout(submit_control)
+            scroll.setWidget(submit_widget)
+            layout.addWidget(scroll)
 
         buttons = QDialogButtonBox.Ok
         self._buttons = QDialogButtonBox(buttons)
@@ -66,24 +89,42 @@ class CameraParametersDialog(QDialog):
         self.setLayout(layout)
         move_center(self)
 
-# TODO: show parameters
 
-# def convert_submit_parm_widgets(key, value, layer):
-#     widgets = []
-#     parm_layout = make_layout(
-#         spacing=48,
-#         margin=(layer * 8, 0, 0, 0)
-#     )
-#
-#     if key is None:
-#
-#     if isinstance(value, dict):
-#         widgets.append(QLabel(f'{key}:'))
-#         for k, v in value.items():
-#             widgets += convert_submit_parm_widgets(k, v, layer + 1)
-#         return widgets
-#     elif isinstance(value, list):
-#         widgets.append(QLabel(f'{key}:'))
-#         for l in value:
-#             widgets += convert_submit_parm_widgets(None, l, layer + 1)
-#         return widgets
+def convert_submit_parm_widgets(key, value, layer):
+    widgets = []
+    parm_layout = make_layout(
+        spacing=30,
+        margin=(layer * 24, 24 if layer == 0 else 0, 0, 0)
+    )
+
+    if key is None:
+        return convert_submit_parm_widgets(value[0], value[1], layer)
+    if isinstance(value, dict):
+        parm_layout.addWidget(
+            QLabel(f'{key}:')
+        )
+        widgets.append(parm_layout)
+        for k, v in value.items():
+            widgets += convert_submit_parm_widgets(k, v, layer + 1)
+        return widgets
+    elif isinstance(value, list):
+        parm_layout.addWidget(
+            QLabel(f'{key}:')
+        )
+        widgets.append(parm_layout)
+        for l in value:
+            widgets += convert_submit_parm_widgets(None, l, layer + 1)
+        return widgets
+
+    name_label = QLabel(f'{key}:')
+    if isinstance(value, float):
+        value = f'{value}'
+    else:
+        value = str(value)
+    value_label = QLabel(value)
+
+    parm_layout.addWidget(name_label)
+    parm_layout.addStretch(0)
+    parm_layout.addWidget(value_label)
+
+    return [parm_layout]
