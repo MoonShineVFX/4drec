@@ -1,12 +1,9 @@
 from PyQt5.Qt import (
-    QDialog, Qt, QLabel, QDialogButtonBox, QLineEdit, QHBoxLayout,
-    QSpinBox, QDoubleSpinBox
+    QDialog, QLabel, QDialogButtonBox
 )
 
-from utility.setting import setting
-
-from master.ui.custom_widgets import move_center, make_layout, make_split_line
-from master.ui.state import state, get_slider_range
+from master.ui.custom_widgets import move_center, make_layout
+from master.ui.state import state
 
 
 class CameraParametersDialog(QDialog):
@@ -27,7 +24,7 @@ class CameraParametersDialog(QDialog):
     def _setup_ui(self):
         self.setStyleSheet(self._default)
         shot = state.get('current_shot')
-        self.setWindowTitle(f'[{shot.name}] Camera Parameters')
+        job = state.get('current_job')
 
         layout = make_layout(
             horizon=False,
@@ -35,21 +32,30 @@ class CameraParametersDialog(QDialog):
             spacing=24
         )
 
-        if isinstance(shot.camera_parameters, dict):
-            for key, value in shot.camera_parameters.items():
-                parm_layout = make_layout(spacing=48)
-                name_label = QLabel(f'{key}:')
-                if isinstance(value, float):
-                    value = f'{value:.2f}'
-                else:
-                    value = str(value)
-                value_label = QLabel(value)
+        # shot parms
+        if job is None:
+            self.setWindowTitle(f'[{shot.name}] Camera Parameters')
+            if isinstance(shot.camera_parameters, dict):
+                for key, value in shot.camera_parameters.items():
+                    parm_layout = make_layout(spacing=48)
+                    name_label = QLabel(f'{key}:')
+                    if isinstance(value, float):
+                        value = f'{value:.2f}'
+                    else:
+                        value = str(value)
+                    value_label = QLabel(value)
 
-                parm_layout.addWidget(name_label)
-                parm_layout.addStretch(0)
-                parm_layout.addWidget(value_label)
+                    parm_layout.addWidget(name_label)
+                    parm_layout.addStretch(0)
+                    parm_layout.addWidget(value_label)
 
-                layout.addLayout(parm_layout)
+                    layout.addLayout(parm_layout)
+        # job parms
+        # else:
+        #     self.setWindowTitle(f'[{job.name}] Submit Parameters')
+        #     for key, value in job.parameters:
+        #         if
+
 
         buttons = QDialogButtonBox.Ok
         self._buttons = QDialogButtonBox(buttons)
@@ -59,3 +65,25 @@ class CameraParametersDialog(QDialog):
 
         self.setLayout(layout)
         move_center(self)
+
+# TODO: show parameters
+
+# def convert_submit_parm_widgets(key, value, layer):
+#     widgets = []
+#     parm_layout = make_layout(
+#         spacing=48,
+#         margin=(layer * 8, 0, 0, 0)
+#     )
+#
+#     if key is None:
+#
+#     if isinstance(value, dict):
+#         widgets.append(QLabel(f'{key}:'))
+#         for k, v in value.items():
+#             widgets += convert_submit_parm_widgets(k, v, layer + 1)
+#         return widgets
+#     elif isinstance(value, list):
+#         widgets.append(QLabel(f'{key}:'))
+#         for l in value:
+#             widgets += convert_submit_parm_widgets(None, l, layer + 1)
+#         return widgets

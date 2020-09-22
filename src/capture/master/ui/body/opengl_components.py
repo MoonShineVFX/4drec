@@ -133,8 +133,6 @@ class OpenGLProgram():
 
 
 class OpenGLObject():
-    _texture_resolution = 4096
-
     def __init__(
         self, vertex_shader, fragment_shader,
         has_texture=False, has_wireframe=True, has_uv=True
@@ -155,6 +153,8 @@ class OpenGLObject():
         self._has_uv = has_uv
 
         self._vertex_count = 0
+
+        self._texture_resolution = 4096
 
         self._initialize()
 
@@ -202,7 +202,7 @@ class OpenGLObject():
             )
 
     def update(
-        self, vertex_count=0, pos_list=None, uv_list=None, texture=None
+        self, vertex_count=0, pos_list=None, uv_list=None, texture=None, resolution=4096
     ):
         # geo
         self._vertex_count = vertex_count
@@ -226,17 +226,29 @@ class OpenGLObject():
         # texture
         if self._has_texture:
             glBindTexture(GL_TEXTURE_2D, self._texture_id)
-            glTexSubImage2D(
-                GL_TEXTURE_2D,
-                0,
-                0,
-                0,
-                self._texture_resolution,
-                self._texture_resolution,
-                GL_RGB,
-                GL_UNSIGNED_BYTE,
-                texture
-            )
+            if resolution != self._texture_resolution:
+                self._texture_resolution = resolution
+                glTexImage2D(
+                    GL_TEXTURE_2D,
+                    0,
+                    3,
+                    self._texture_resolution,
+                    self._texture_resolution,
+                    0, GL_RGB, GL_UNSIGNED_BYTE,
+                    texture
+                )
+            else:
+                glTexSubImage2D(
+                    GL_TEXTURE_2D,
+                    0,
+                    0,
+                    0,
+                    self._texture_resolution,
+                    self._texture_resolution,
+                    GL_RGB,
+                    GL_UNSIGNED_BYTE,
+                    texture
+                )
 
     def render(self):
         if self._vertex_count == 0:

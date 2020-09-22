@@ -48,7 +48,7 @@ flows:
     iterations: 10
     lambda: 1
     removeLargeTrianglesFactor: 30
-  MeshResampling:
+  MeshDecimate:
     simplificationFactor: 1
   Texturing:
     textureSide: 4096

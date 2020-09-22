@@ -147,13 +147,13 @@ class MeshClipping(PythonFlow):
             f.write(data)
 
 
-class MeshResampling(Flow):
+class MeshDecimate(Flow):
     _file = {
         'obj': 'mesh.obj',
     }
 
     def __init__(self):
-        super(MeshResampling, self).__init__()
+        super(MeshDecimate, self).__init__()
 
     def _make_command(self):
         with open(MeshClipping.get_file_path('obj')) as f:
@@ -162,7 +162,7 @@ class MeshResampling(Flow):
         return FlowCommand(
             execute=(
                 process.setting.alicevision_path +
-                'aliceVision_meshResampling'
+                'aliceVision_meshDecimate'
             ),
             args={
                 'input': MeshClipping.get_file_path('obj'),
@@ -195,7 +195,7 @@ class Texturing(Flow):
             ),
             args={
                 'input': Meshing.get_file_path('dense'),
-                'inputMesh': MeshResampling.get_file_path('obj'),
+                'inputMesh': MeshDecimate.get_file_path('obj'),
                 'imagesFolder': PrepareDenseScene.get_folder_path(),
                 'output': self.get_folder_path(),
             },
@@ -227,7 +227,7 @@ class Package(PythonFlow):
             obj_path=Texturing.get_file_path('obj'),
             jpg_path=Texturing.get_file_path('texture'),
             frame=process.setting.frame,
-            submit_parameters=process.setting.get_parameters(),
+            submit_parameters=process.setting.to_argument(),
             sfm_parameters=sfm_parameters,
             validViews=int(stats_data['validViews']),
             poses=int(stats_data['poses']),
@@ -250,7 +250,7 @@ class OptimizeStorage(PythonFlow):
         MeshFiltering._clean_folder()
         MeshClipping._clean_folder()
         Texturing._clean_folder()
-        MeshResampling._clean_folder()
+        MeshDecimate._clean_folder()
         FeatureMatching._clean_folder()
         ClipLandmarks._clean_folder()
         ConvertSFM._clean_folder()

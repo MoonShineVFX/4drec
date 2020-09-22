@@ -30,6 +30,7 @@ class ResolvePackage:
         self._tex_cache = None
         self._job_id = job_id
         self._frame = frame
+        self._resolution = 4096
 
     def get_name(self):
         if self._frame is None:
@@ -93,6 +94,7 @@ class ResolvePackage:
             fourd_frame = FourdFrameManager.load(new_format_path)
             geo_data = fourd_frame.get_geo_data()
             tex_data = fourd_frame.get_texture_data()
+            self._resolution = fourd_frame.get_texture_resolution()
 
             self._cache_buffer(geo_data, tex_data)
             return True
@@ -100,7 +102,7 @@ class ResolvePackage:
 
     def to_payload(self):
         geo_data = (self._geo_cache[0].load(), self._geo_cache[1].load())
-        return len(geo_data[0]), geo_data, self._tex_cache.load()
+        return len(geo_data[0]), geo_data, self._tex_cache.load(), self._resolution
 
 
 def build_camera_pos_list():
@@ -161,4 +163,4 @@ class RigPackage(ResolvePackage):
 
     def to_payload(self):
         geo_data = (self._geo_cache.load(), [])
-        return len(geo_data[0]), geo_data, None
+        return len(geo_data[0]), geo_data, None, None

@@ -143,7 +143,7 @@ class CameraConnector(Process):
                     image_ptr.GetHeight()
                 )
 
-                if self._is_live_view:
+                if self._is_live_view and not self._is_recording:
                     self._live_viewer.set_buffer(camera_image)
 
                 if self._is_recording:

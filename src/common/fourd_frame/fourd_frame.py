@@ -110,9 +110,8 @@ class FourdFrameManager:
 
         # submit_parameters
         if submit_parameters is not None:
-            submit_parameters_string = json.dumps(submit_parameters)
             submit_parameters_buffer = lz4framed.compress(
-                submit_parameters_string.encode()
+                submit_parameters.encode()
             )
             header['submit_parameters_buffer_size'] = len(submit_parameters_buffer)
 
@@ -162,6 +161,9 @@ class FourdFrame:
             header[key] = data
 
         return header
+
+    def get_texture_resolution(self):
+        return self.header['texture_width']
 
     def get_file_data(self, seek_buffer_name):
         if self.header['format'] == b'4dk1':

@@ -76,7 +76,8 @@ class OpenGLCore(QOpenGLWidget):
             vertex_count=cache[0],
             pos_list=cache[1][0],
             uv_list=cache[1][1],
-            texture=cache[2]
+            texture=cache[2],
+            resolution=cache[3]
         )
         self._interface.update_vertex_count(cache[0])
 
