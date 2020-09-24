@@ -3,7 +3,8 @@ from reference import process
 
 from .feature import (
     FeatureExtraction, ClipLandmarks, FeatureMatching,
-    PrepareDenseScene, StructureFromMotion, ConvertSFM
+    PrepareDenseScene, StructureFromMotion, ConvertSFM,
+    PrepareDenseSceneWithMask, MaskImages
 )
 from .flow import Flow, FlowCommand, PythonFlow
 from .depth import DepthMapEstimation
@@ -79,7 +80,8 @@ class MeshFiltering(Flow):
             args={
                 'input': Meshing.get_file_path('obj'),
                 'output': self.get_file_path('obj'),
-            }
+            },
+            override=self.get_parameters()
         )
 
 
@@ -242,6 +244,8 @@ class OptimizeStorage(PythonFlow):
 
     def run_python(self):
         PrepareDenseScene._clean_folder()
+        PrepareDenseSceneWithMask._clean_folder()
+        MaskImages._clean_folder()
         Meshing._clean_folder()
         FeatureExtraction._clean_folder()
         DepthMapEstimation._clean_folder()

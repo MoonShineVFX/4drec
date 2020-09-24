@@ -6,8 +6,8 @@ reference:
 
 clip_range:
   height: 3
-  diameter: 4
-  ground: 0.01
+  diameter: 3.5
+  ground: -0.1
 
 mesh_reduce_ratio: 0.3
 
@@ -37,17 +37,17 @@ flows:
     nNearestCams: 8
   Meshing:
     maxPoints: 5000000
+    # estimateSpaceMinObservations: 3
     # minStep: 2,
     # simGaussianSizeInit: 5,
     # simGaussianSize: 5,
     # maxPoints: 50000000,
-    # estimateSpaceMinObservations: 2,
     # pixSizeMarginInitCoef: 1,
     # refineFuse: 1
   MeshFiltering:
-    iterations: 10
-    lambda: 1
-    removeLargeTrianglesFactor: 30
+    iterations: 20
+    lambda: 0.25
+    removeLargeTrianglesFactor: 60
   MeshDecimate:
     simplificationFactor: 1
   Texturing:

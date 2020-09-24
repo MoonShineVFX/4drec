@@ -2,7 +2,7 @@
 from reference import process
 
 from .flow import Flow, FlowCommand
-from .feature import ClipLandmarks, PrepareDenseScene
+from .feature import ClipLandmarks, PrepareDenseSceneWithMask
 
 
 class DepthMapEstimation(Flow):
@@ -17,7 +17,7 @@ class DepthMapEstimation(Flow):
             ),
             args={
                 'input': ClipLandmarks.get_file_path('sfm'),
-                'imagesFolder': PrepareDenseScene.get_folder_path(),
+                'imagesFolder': PrepareDenseSceneWithMask.get_folder_path(),
                 'output': self.get_folder_path(),
             },
             override=self.get_parameters()

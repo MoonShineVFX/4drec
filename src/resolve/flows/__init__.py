@@ -2,7 +2,7 @@ from define import ResolveStep
 
 from .feature import (
     ConvertSFM, FeatureExtraction, FeatureMatching, StructureFromMotion,
-    PrepareDenseScene, ClipLandmarks
+    MaskImages, PrepareDenseSceneWithMask, PrepareDenseScene, ClipLandmarks
 )
 from .calibrate import (
     ConstructFromAruco, GenerateSFM, TransformStructure, AlignStructure
@@ -21,7 +21,7 @@ flow_pipeline = {
     ],
     ResolveStep.FEATURE: [
         ConvertSFM, FeatureExtraction, FeatureMatching,
-        StructureFromMotion,
+        StructureFromMotion, MaskImages, PrepareDenseSceneWithMask,
         PrepareDenseScene, ClipLandmarks
     ],
     ResolveStep.DEPTH: [DepthMapEstimation],

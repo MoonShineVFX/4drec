@@ -106,6 +106,93 @@ class StructureFromMotion(Flow):
         return detect is not None
 
 
+class MaskImages(PythonFlow):
+    def __init__(self):
+        super(MaskImages, self).__init__()
+
+    @staticmethod
+    def mask_image(image_file, export_path):
+        import cv2
+        import numpy as np
+        from pathlib import Path
+
+        lower_green = np.array([55, 32, 20])
+        upper_green = np.array([70, 62, 255])
+
+        img = cv2.imread(image_file)
+
+        # convert hsv
+        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+
+        # mask
+        mask = cv2.inRange(hsv, lower_green, upper_green)
+
+        # smooth
+        kernel = np.ones((3, 3), np.uint8)
+        opened = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+        closed = cv2.morphologyEx(opened, cv2.MORPH_CLOSE, kernel)
+
+        # apply
+        result = img.copy()
+        result[closed == 255] = 0
+
+        # export
+        export_filename = f'{export_path}\\{Path(image_file).stem}.png'
+        cv2.imwrite(
+            export_filename,
+            result,
+            [cv2.IMWRITE_PNG_COMPRESSION, 5]
+        )
+
+        return export_filename
+
+    def run_python(self):
+        if process.setting.is_cali():
+            return
+
+        from pathlib import Path
+        from concurrent.futures import ProcessPoolExecutor, as_completed
+
+        # start
+        folder = Path(process.setting.shot_path)
+        export_path = self.get_folder_path()
+
+        with ProcessPoolExecutor() as executor:
+            future_list = []
+
+            for image_file in folder.glob(
+                    f'*_{process.setting.frame:06d}.jpg'
+            ):
+                future = executor.submit(
+                    MaskImages.mask_image, str(image_file), export_path
+                )
+                future_list.append(future)
+
+            for future in as_completed(future_list):
+                result = future.result()
+                process.log_info(result)
+
+
+class PrepareDenseSceneWithMask(Flow):
+    def __init__(self):
+        super(PrepareDenseSceneWithMask, self).__init__()
+
+    def _make_command(self):
+        if process.setting.is_cali():
+            return
+        return FlowCommand(
+            execute=(
+                process.setting.alicevision_path +
+                'aliceVision_prepareDenseScene'
+            ),
+            args={
+                'input': StructureFromMotion.get_file_path('sfm'),
+                'output': self.get_folder_path(),
+                'imagesFolders': MaskImages.get_folder_path()
+            }
+        )
+
+
 class PrepareDenseScene(Flow):
     def __init__(self):
         super(PrepareDenseScene, self).__init__()
@@ -120,7 +207,7 @@ class PrepareDenseScene(Flow):
             ),
             args={
                 'input': StructureFromMotion.get_file_path('sfm'),
-                'output': self.get_folder_path(),
+                'output': self.get_folder_path()
             }
         )
 
@@ -164,3 +251,7 @@ class ClipLandmarks(PythonFlow):
 
         with open(self.get_file_path('sfm'), 'w') as f:
             json.dump(data, f, indent=4)
+
+
+if '__main__' == __name__:
+    pass
