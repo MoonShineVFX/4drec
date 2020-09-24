@@ -77,7 +77,7 @@ def submit_deadline(shot, job):
             'Name': f'{submit_job.count} - {step} ({job.get_id()})',
             'UserName': 'develop',
             'ChunkSize': '1',
-            'Pool': 'z__4drec',
+            'Pool': '4drec',
             'Frames': ','.join([str(f) for f in job.frames]),
             'OutputDirectory0': job_path,
             **_job_info,
@@ -102,7 +102,7 @@ def submit_deadline(shot, job):
             'calibrate',
             {
                 'Group': '4DREC_cpu',
-                'Priority': '90',
+                'Priority': '80',
                 'Frames': '0'
             }
         )
@@ -114,7 +114,7 @@ def submit_deadline(shot, job):
             'feature',
             {
                 'Group': '4DREC_cpu',
-                'Priority': '90',
+                'Priority': '80',
                 'JobDependencies': calibrate_id,
                 'Frames': '0'
             }
@@ -129,7 +129,7 @@ def submit_deadline(shot, job):
             'feature',
             {
                 'Group': '4DREC_cpu',
-                'Priority': '90',
+                'Priority': '70',
                 'JobDependencies': job.parameters['cali'][1]
             }
         )
@@ -141,7 +141,7 @@ def submit_deadline(shot, job):
             'depth',
             {
                 'Group': '4DREC_gpu',
-                'Priority': '90',
+                'Priority': '70',
                 'JobDependencies': feature_id,
                 'IsFrameDependent': 'true'
             }
@@ -154,7 +154,7 @@ def submit_deadline(shot, job):
             'mesh',
             {
                 'Group': '4DREC_cpu',
-                'Priority': '100',
+                'Priority': '80',
                 'JobDependencies': depth_id,
                 'IsFrameDependent': 'true'
             }

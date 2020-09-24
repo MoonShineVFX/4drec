@@ -2,6 +2,7 @@ from queue import Queue
 import threading
 import cv2
 import numpy as np
+import lz4framed
 from PyQt5.Qt import QPixmap, QImage
 
 from utility.setting import setting
@@ -84,7 +85,12 @@ class CameraLibrary(threading.Thread):
             [camera_pixmap.get_cache_type()]
         )
 
+        if camera_pixmap.frame in target_cache:
+            if target_cache[camera_pixmap.frame] is not None:
+                return
+
         target_cache[camera_pixmap.frame] = camera_pixmap
+        camera_pixmap.save_cache()
 
         shot = project_manager.get_shot(camera_pixmap.shot_id)
         shot.update_cache_progress(camera_pixmap)
@@ -106,7 +112,7 @@ class CameraLibrary(threading.Thread):
     def add_task(self, task_type, payload):
         self._queue.put((task_type, payload))
 
-    def send_ui(self, camera_pixmap):
+    def send_ui(self, camera_pixmap, save=False):
         """將 camera_pixmap 傳送給 UI
 
         Args:
@@ -121,8 +127,19 @@ class CameraLibrary(threading.Thread):
         else:
             ui.dispatch_event(
                 UIEventType.CAMERA_PIXMAP,
-                camera_pixmap.to_payload()
+                camera_pixmap.to_payload(
+                    ui.get_state('Focus'),
+                    ui.get_state('caching'),
+                    save
+                )
             )
+
+            # 如果是 shot 圖像便存起來
+            if save and camera_pixmap.is_shot():
+                self.add_task(
+                    CameraLibraryTask.IMPORT,
+                    camera_pixmap
+                )
 
     def on_image_received(self, message, direct=False):
         """收到圖像的回調"""
@@ -181,17 +198,10 @@ class CameraPixmapEncoder(threading.Thread):
             pixmap = self._queue.get()
 
             # 斷線產生 buf 會是 None 的情況不進行轉換
-            pixmap.convert(ui.get_state('Focus'))
-
-            # 如果是 shot 圖像便存起來
-            if pixmap.is_shot():
-                self._library.add_task(
-                    CameraLibraryTask.IMPORT,
-                    pixmap
-                )
+            pixmap.decode()
 
             # 傳給 UI
-            self._library.send_ui(pixmap)
+            self._library.send_ui(pixmap, save=True)
 
 
 class CameraPixmap():
@@ -212,12 +222,16 @@ class CameraPixmap():
         self._buf = buf
         self._pixmap = pixmap  # QPixmap
         self._parms = parms  # 圖像資訊
+        self._cache = None
 
     def __getattr__(self, prop):
         if prop in self._parms:
             return self._parms[prop]
         else:
             raise KeyError(f'No {prop} in parms')
+
+    def is_wait_cache(self):
+        return self._wait_cache
 
     def is_delay(self):
         return 'delay' in self._parms and self._parms['delay']
@@ -238,11 +252,19 @@ class CameraPixmap():
     def is_converted(self):
         return self._pixmap is not None
 
+    def is_cache(self):
+        return self._cache is not None
+
     def is_state(self):
         return 'state' in self._parms
 
-    def to_payload(self):
-        return (self._parms['camera_id'], self._pixmap, self.is_live_view())
+    def to_payload(self, focus, caching, save):
+        pixmap = self.convert_to_pixmap(focus, save) if not caching else None
+        return (
+            self._parms['camera_id'],
+            pixmap,
+            self.is_live_view()
+        )
 
     def to_state(self):
         return (self._parms['camera_id'], self._parms['state'])
@@ -258,10 +280,10 @@ class CameraPixmap():
         return self._parms
 
     def get_size(self):
-        if self._pixmap is None:
+        if self._cache is None:
             return 0
 
-        return self._pixmap.width() * self._pixmap.height() * 3 * 1.35
+        return len(self._cache)
 
     def get_buf(self):
         return self._buf
@@ -270,39 +292,59 @@ class CameraPixmap():
         """取得 QPixmap"""
         return self._pixmap
 
-    def convert(self, focus=False):
-        """做一系列圖像轉換至 pixmap
-
-        二進制JPEG > cv2 > QImage > QPixmap
-
-        """
+    def decode(self):
         if self._buf is None:
             return
 
         # 解碼 JPEG 成 cv2 跟正確顏色
         im = jpeg_coder.decode(self._buf)
         im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
-        _height, _width, _ = im.shape
+        self._buf = im
+        self._shape = self._buf.shape
+        self._type = self._buf.dtype
+
+    def save_cache(self):
+        if self._buf is None:
+            return
+        self._cache = lz4framed.compress(self._buf)
+        self._buf = None
+
+    def convert_to_pixmap(self, focus=False, save=False):
+        """做一系列圖像轉換至 pixmap
+
+        二進制JPEG > cv2 > QImage > QPixmap
+
+        """
+        if self._buf is None:
+            if not self.is_cache():
+                return None
+            buf = lz4framed.decompress(self._cache)
+            buf = np.frombuffer(buf, self._type)
+            buf.shape = self._shape
+        else:
+            buf = np.copy(self._buf)
+
+        _height, _width, _ = buf.shape
 
         if (
             self.is_live_view() and
             _width == self._ow
         ):
             if focus:
-                sim = cv2.resize(im, (int(_width / 2), int(_height / 2)))
+                sim = cv2.resize(buf, (int(_width / 2), int(_height / 2)))
                 edges = cv2.Canny(sim, 280, 380)
                 edges = cv2.dilate(edges, self._kernel)
                 edges = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
                 edges *= np.array((1, 0, 0), np.uint8)
                 edges = cv2.resize(edges, (_width, _height))
-                im = np.bitwise_or(im, edges)
-            tm = cv2.resize(im, (int(_width / 2), int(_height / 2)))
+                buf = np.bitwise_or(buf, edges)
+            tm = cv2.resize(buf, (int(_width / 2), int(_height / 2)))
             tm = cv2.cvtColor(tm, cv2.COLOR_RGB2BGR)
             server.set_buffer(tm)
 
         # 轉成 QImage
         q_image = QImage(
-            im.data,
+            buf.data,
             _width,
             _height,
             3 * _width,
@@ -310,5 +352,6 @@ class CameraPixmap():
         )
 
         # 轉成 QPixmap
-        self._buf = None
-        self._pixmap = QPixmap.fromImage(q_image)
+        if not save:
+            self._buf = None
+        return QPixmap.fromImage(q_image)

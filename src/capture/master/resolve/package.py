@@ -6,6 +6,7 @@ from common.jpeg_coder import jpeg_coder
 from common.fourd_frame import FourdFrameManager
 import json
 import numpy as np
+import cv2
 
 
 class CompressedCache:
@@ -30,7 +31,7 @@ class ResolvePackage:
         self._tex_cache = None
         self._job_id = job_id
         self._frame = frame
-        self._resolution = 4096
+        self._resolution = setting.max_display_resolution
 
     def get_name(self):
         if self._frame is None:
@@ -95,6 +96,18 @@ class ResolvePackage:
             geo_data = fourd_frame.get_geo_data()
             tex_data = fourd_frame.get_texture_data()
             self._resolution = fourd_frame.get_texture_resolution()
+
+            # resize for better playback performance
+            if self._resolution > setting.max_display_resolution:
+                tex_data = cv2.resize(
+                    tex_data,
+                    dsize=(
+                        setting.max_display_resolution,
+                        setting.max_display_resolution
+                    ),
+                    interpolation=cv2.INTER_CUBIC
+                )
+                self._resolution = setting.max_display_resolution
 
             self._cache_buffer(geo_data, tex_data)
             return True

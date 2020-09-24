@@ -110,12 +110,12 @@ class OpenGLProgram():
         )
         glUniform1i(uni_backfacing, toggle)
 
-    def set_gamma(self, value):
+    def set_parm(self, parm_name, value):
         self.use()
-        uni_gamma = glGetUniformLocation(
-            self._program, 'gammaCorrect'
+        gl_parm = glGetUniformLocation(
+            self._program, parm_name
         )
-        glUniform1f(uni_gamma, value)
+        glUniform1f(gl_parm, value)
 
     def update_camera(self, project_matrix, move_matrix):
         self.use()
@@ -185,11 +185,12 @@ class OpenGLObject():
             self._texture_id = glGenTextures(1)
             glBindTexture(GL_TEXTURE_2D, self._texture_id)
 
+            # GL_NEAREST or GL_LINEAR
             glTexParameterf(
-                GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST
+                GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR
             )
             glTexParameterf(
-                GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST
+                GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR
             )
             glTexImage2D(
                 GL_TEXTURE_2D, 0, 3,
@@ -289,8 +290,8 @@ class OpenGLObject():
     def set_visible(self, visible):
         self._visible = visible
 
-    def offset_gamma(self, value):
-        self._program.set_gamma(value)
+    def set_shader_parm(self, parm_name, value):
+        self._program.set_parm(parm_name, value)
 
 
 class FloorObject(OpenGLObject):

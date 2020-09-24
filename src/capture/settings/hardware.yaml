@@ -8,6 +8,8 @@ camera_resolution: [4096, 3000]
 
 frame_rate: 30
 
+max_display_resolution: 2048
+
 slaves:
   - '4DK-S00'
   - '4DK-S01'

@@ -18,6 +18,11 @@ class OpenGLCore(QOpenGLWidget):
     _offset_speed = 0.0035
     _zoom_wheel_speed = 0.2
     _zoom_move_speed = 0.01
+    _default_shader_parms = {
+        'gamma': 1.5,
+        'saturate': 1.2,
+        'exposure': 1.6
+    }
 
     def __init__(self, parent, interface):
         super().__init__(parent)
@@ -27,7 +32,7 @@ class OpenGLCore(QOpenGLWidget):
         self._last_mouse_pos = None
         self._window_size = None
         self._background_color = None
-        self._gamma_correct = 1.3
+        self._shader_parms = self._default_shader_parms.copy()
 
         # GL
         self._objects = {}
@@ -46,7 +51,6 @@ class OpenGLCore(QOpenGLWidget):
         )
         color = self.palette().dark().color()
         self._background_color = color.getRgbF()
-        self._interface.update_gamma(self._gamma_correct)
 
         # anti aliasing
         fmt = QSurfaceFormat()
@@ -164,11 +168,15 @@ class OpenGLCore(QOpenGLWidget):
         self._camera.update()
         self.update()
 
-    def offset_model_gamma(self, value):
-        self._gamma_correct += value
-        self._objects['main'].offset_gamma(self._gamma_correct)
+    def offset_model_shader(self, parm_name, value):
+        self._shader_parms[parm_name] += value
+        self._objects['main'].set_shader_parm(
+            parm_name, self._shader_parms[parm_name]
+        )
         self.update()
-        self._interface.update_gamma(self._gamma_correct)
+        self._interface.update_parm(
+            parm_name, self._shader_parms[parm_name]
+        )
 
     def initializeGL(self):
         glEnable(GL_DEPTH_TEST)
@@ -194,6 +202,12 @@ class OpenGLCore(QOpenGLWidget):
         self._objects['main'] = OpenGLObject(vtx, main, has_texture=True)
         self._objects['floor'] = FloorObject(vtx, circle)
         self._objects['camera'] = CameraObject(vtx, camera)
+
+        # Set shader default
+        for key, value in self._shader_parms.items():
+            self._objects['main'].set_shader_parm(
+                key, value
+            )
 
     def paintGL(self):
         for obj in self._objects.values():
