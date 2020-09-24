@@ -26,8 +26,11 @@ def export_geometry(load_path, filename, frame, export_path):
 
     fourd_frame = FourdFrameManager.load(load_path)
 
-    with open(f'{export_path}/obj/{filename}_{frame:04d}.obj', 'w') as f:
-        f.write(fourd_frame.get_obj_data())
+    # with open(f'{export_path}/obj/{filename}_{frame:04d}.obj', 'w') as f:
+    #     f.write(fourd_frame.get_obj_data())
+
+    with open(f'{export_path}/geo/{filename}_{frame:04d}.4dh', 'wb') as f:
+        f.write(fourd_frame.get_houdini_data())
 
     with open(f'{export_path}/texture/{filename}_{frame:04d}.jpg', 'wb') as f:
         f.write(fourd_frame.get_texture_data(raw=True))
@@ -69,7 +72,8 @@ class MultiExecutor(threading.Thread):
 
         filename = re.sub(r'[^\w\d-]', '_', shot_name)
         export_path = Path(f'{export_path}/{filename}/')
-        (export_path / 'obj').mkdir(parents=True, exist_ok=True)
+        # (export_path / 'obj').mkdir(parents=True, exist_ok=True)
+        (export_path / 'geo').mkdir(parents=True, exist_ok=True)
         (export_path / 'texture').mkdir(parents=True, exist_ok=True)
 
         with ProcessPoolExecutor() as executor:

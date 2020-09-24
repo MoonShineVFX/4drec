@@ -77,7 +77,7 @@ class ModelInterface(QLabel):
         font-size: 13;
         color: palette(window-text);
         min-width: 200px;
-        min-height: 300px;
+        min-height: 330px;
     '''
 
     def __init__(self):

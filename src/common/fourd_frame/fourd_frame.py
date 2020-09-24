@@ -213,6 +213,23 @@ class FourdFrame:
 
         return obj_data
 
+    def get_houdini_data(self):
+        import zlib
+        pos_list, uv_list = self.get_geo_data()
+        pos_data = zlib.compress(pos_list.tobytes())
+        uv_data = zlib.compress(uv_list.tobytes())
+        point_count = self.header['geo_faces'] * 3
+        data = struct.pack(
+            'III',
+            point_count,
+            len(pos_data),
+            len(uv_data)
+        )
+        data += pos_data
+        data += uv_data
+        return data
+
+
     def get_submit_data(self):
         if self._submit_data is None:
             submit_file = self.get_file_data('submit')

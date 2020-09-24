@@ -21,7 +21,7 @@ class OpenGLCore(QOpenGLWidget):
     _default_shader_parms = {
         'gamma': 1.5,
         'saturate': 1.2,
-        'exposure': 1.6
+        'exposure': 1.5
     }
 
     def __init__(self, parent, interface):
