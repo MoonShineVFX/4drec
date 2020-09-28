@@ -1,5 +1,5 @@
 from PyQt5.Qt import (
-    Qt, QLabel, QThread, pyqtSignal, QPainterPath,
+    Qt, QLabel, QThread, pyqtSignal, QPainterPath, QPixmap,
     QSlider, QRect, QPainter, QSize, QVBoxLayout, QColor, QBrush
 )
 from threading import Condition
@@ -319,16 +319,17 @@ class PlaybackSlider(QSlider, EntityBinder):
 
     def __init__(self):
         super().__init__(Qt.Horizontal)
-        self._cache_progress = None
         self._tasks = {}
         self._crop_path = None
         self._crop_brush = None
+        self._bar_map = None
         self._setup_ui()
         state.on_changed('crop_range', self._update)
         state.on_changed('loop_range', self._update)
         state.on_changed('Crop', self._update)
         state.on_changed('Loop', self._update)
         state.on_changed('key', self._on_key_pressed)
+        state.on_changed('caching', self._update_progress)
 
     def _on_key_pressed(self):
         if not self.isVisible():
@@ -360,6 +361,14 @@ class PlaybackSlider(QSlider, EntityBinder):
         self.setStyleSheet(self._default)
         self.setFocusPolicy(Qt.NoFocus)
 
+        self._create_crop_elements()
+        self._create_bar_map()
+
+    def on_entity_changed(self, entity):
+        self.bind_entity(entity, self._update_progress, modify=False)
+        self._update_progress()
+
+    def _create_crop_elements(self):
         cw, ch, _ = self._crop_size
         path = QPainterPath()
         path.moveTo(0, ch)
@@ -369,26 +378,35 @@ class PlaybackSlider(QSlider, EntityBinder):
         self._crop_path = path
         self._crop_brush = QBrush(self.palette().light().color())
 
-    def on_entity_changed(self, entity):
-        self.bind_entity(entity, self._update_progress, modify=False)
-        self._update_progress()
+    def _create_bar_map(self):
+        self._bar_map = QPixmap(self.width(), self.height())
+        self._bar_map.fill(Qt.transparent)
+        self._paint_progress()
+
+    def resizeEvent(self, event):
+        self._create_bar_map()
 
     def _update_progress(self):
+        if state.get('caching') or not self.isVisible():
+            return
+
         progress = self._entity.get_cache_progress()
-        if progress != self._cache_progress:
-            if isinstance(progress, tuple):
-                offset_tasks = {}
-                offset_frame = state.get('offset_frame')
-                for k, v in progress[1].items():
-                    offset_tasks[k - offset_frame] = v
-                self._tasks = offset_tasks
 
-            self._cache_progress = progress
-            self._update()
+        if isinstance(progress, tuple):
+            offset_tasks = {}
+            offset_frame = state.get('offset_frame')
+            for k, v in progress[1].items():
+                offset_tasks[k - offset_frame] = v
+            self._tasks = offset_tasks
 
-    def paintEvent(self, evt):
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
+        self._paint_progress()
+        self._update()
+
+    def _paint_progress(self):
+        if self._bar_map is None:
+            return
+
+        painter = QPainter(self._bar_map)
 
         w = self.width()
         hw = self._handle_width
@@ -413,7 +431,7 @@ class PlaybackSlider(QSlider, EntityBinder):
         job = state.get('current_job')
         body_mode = state.get('body_mode')
         if shot is not None and body_mode is BodyMode.PLAYBACK:
-            progress = self._cache_progress
+            progress = self._entity.get_cache_progress()
             t_color = self.palette().midlight().color()
             c_color = QColor('#DB2A71')
             sf, ef = shot.frame_range
@@ -447,7 +465,7 @@ class PlaybackSlider(QSlider, EntityBinder):
 
                 i += 1
         elif job is not None and body_mode is BodyMode.MODEL:
-            progress, tasks = self._cache_progress
+            progress, tasks = self._entity.get_cache_progress()
 
             t_color = self.palette().midlight().color()
 
@@ -466,7 +484,29 @@ class PlaybackSlider(QSlider, EntityBinder):
                     )
 
                 i += 1
+        painter.end()
 
+    def paintEvent(self, evt):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+
+        w = self.width()
+        hw = self._handle_width
+        w -= hw
+
+        h = self.height()
+
+        if self.maximum() == 0:
+            tw = 0
+        else:
+            tw = w / self.maximum()
+
+        # bar map
+        painter.drawPixmap(0, 0, self._bar_map)
+
+        # crop
+        painter.translate(hw / 2, 0)
+        body_mode = state.get('body_mode')
         if state.get('Crop') or state.get('Loop'):
             cw, ch, oh = self._crop_size
             clip_range = 'crop_range'
@@ -490,8 +530,9 @@ class PlaybackSlider(QSlider, EntityBinder):
                     self._crop_path.translated(tw * ec - cw / 2, h - ch - oh),
                     self._crop_brush
                 )
-
         painter.translate(-hw / 2, 0)
+
+        # normal
         super().paintEvent(evt)
 
         frames = state.get('frames')

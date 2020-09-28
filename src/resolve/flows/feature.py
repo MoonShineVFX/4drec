@@ -133,18 +133,22 @@ class MaskImages(PythonFlow):
         closed = cv2.morphologyEx(opened, cv2.MORPH_CLOSE, kernel)
 
         # apply
-        result = img.copy()
-        result[closed == 255] = 0
+        img[closed == 255] = 0
 
         # export
-        export_filename = f'{export_path}\\{Path(image_file).stem}.png'
+        filename = f'{Path(image_file).stem}.png'
         cv2.imwrite(
-            export_filename,
-            result,
+            f'{export_path}\\matte\\{filename}',
+            closed,
+            [cv2.IMWRITE_PNG_COMPRESSION, 5]
+        )
+        cv2.imwrite(
+            f'{export_path}\\{filename}',
+            img,
             [cv2.IMWRITE_PNG_COMPRESSION, 5]
         )
 
-        return export_filename
+        return filename
 
     def run_python(self):
         if process.setting.is_cali():
@@ -156,6 +160,7 @@ class MaskImages(PythonFlow):
         # start
         folder = Path(process.setting.shot_path)
         export_path = self.get_folder_path()
+        (Path(export_path) / 'matte').mkdir(parents=True, exist_ok=True)
 
         with ProcessPoolExecutor() as executor:
             future_list = []
