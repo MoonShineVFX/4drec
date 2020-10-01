@@ -26,7 +26,7 @@ def check_deadline_server():
     return ''
 
 
-def submit_deadline(shot, job):
+def submit_deadline(project_name, shot, job):
     """將專案放算到 Deadline
 
     Args:
@@ -72,7 +72,7 @@ def submit_deadline(shot, job):
 
         job_info = {
             'Plugin': '4DREC',
-            'BatchName': f'[4D][{label}] {job.name} - {shot.name} ' +
+            'BatchName': f'[4D][{label}] {project_name} - {shot.name} - {job.name} ' +
                          f'({job.get_id()})',
             'Name': f'{submit_job.count} - {step} ({job.get_id()})',
             'UserName': 'develop',
@@ -141,7 +141,7 @@ def submit_deadline(shot, job):
             'depth',
             {
                 'Group': '4DREC_gpu',
-                'Priority': '70',
+                'Priority': '75',
                 'JobDependencies': feature_id,
                 'IsFrameDependent': 'true'
             }

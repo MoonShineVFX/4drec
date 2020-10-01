@@ -1,9 +1,9 @@
 from PyQt5.Qt import (
     QDialog, QLabel, QDialogButtonBox, QLayout, QScrollArea,
-    QWidget, QVBoxLayout, Qt
+    QWidget, Qt
 )
 
-from master.ui.custom_widgets import move_center, make_layout, make_split_line
+from master.ui.custom_widgets import move_center, make_layout
 from master.ui.state import state
 
 

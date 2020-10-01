@@ -452,11 +452,10 @@ class CameraManager():
 
     def _get_bias(self):
         """取得相機實際擷取的格數誤差的最大值"""
-        frames = []
-        adjusted_frames = []
-        for camera in self._camera_list.values():
-            frames.append(camera.current_frame)
-            adjusted_frames.append(camera.current_frame)
+        frames = [
+            camera.current_frame
+            for camera in self._camera_list.values()
+        ]
         min_frame = min(frames)
         max_frame = max(frames)
         return max_frame - min_frame

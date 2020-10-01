@@ -73,6 +73,11 @@ class CameraConnector(Process):
             4. 重複第一步
 
         """
+        import win32process, win32api
+        win32process.SetPriorityClass(
+            win32api.GetCurrentProcess(),
+            win32process.REALTIME_PRIORITY_CLASS
+        )
         self._initialize()
         while self._is_retrigger:
             self._is_retrigger = False

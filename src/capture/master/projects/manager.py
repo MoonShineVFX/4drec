@@ -34,6 +34,7 @@ class ProjectManager():
         """
         self._selected_shots = {}
         self._selected_jobs = {}
+        self._selected_projects = {}
 
         # 自動選擇最近的 project 跟 shot
         if len(self._projects) > 0:
@@ -59,6 +60,8 @@ class ProjectManager():
 
         """
         self.current_project = project
+        if project.get_id() not in self._selected_projects:
+            self._selected_projects[project.get_id()] = project
 
         if project:
             log.info(f'Select project: {project}')
@@ -81,7 +84,7 @@ class ProjectManager():
         """
         if shot:
             log.info(f'Select shot: {shot}')
-            if shot not in self._selected_shots:
+            if shot.get_id() not in self._selected_shots:
                 self._selected_shots[shot.get_id()] = shot
         else:
             log.info('Select shot: Empty')
@@ -92,7 +95,7 @@ class ProjectManager():
     def select_job(self, job):
         if job:
             log.info(f'Select job: {job}')
-            if job not in self._selected_jobs:
+            if job.get_id() not in self._selected_jobs:
                 self._selected_jobs[job.get_id()] = job
         else:
             log.info('Select job: Empty')
@@ -179,6 +182,9 @@ class ProjectManager():
         # 如果有實體更改
         elif event is EntityEvent.MODIFY:
             log.info(f'Modify:\n {entity.print_name}')
+
+    def get_project(self, project_id):
+        return self._selected_projects[project_id]
 
     def get_shot(self, shot_id):
         """取得有選擇過的 shot

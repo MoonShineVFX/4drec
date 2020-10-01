@@ -262,7 +262,7 @@ class ShotSubmitParameter(QHBoxLayout):
                 widget.setDecimals(decimal)
                 widget.setSingleStep(pow(10, -decimal))
 
-            widget.setMinimum(0)
+            widget.setMinimum(-9999999)
             widget.setMaximum(9999999)
             widget.setValue(value)
 

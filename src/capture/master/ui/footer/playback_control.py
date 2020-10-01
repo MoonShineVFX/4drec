@@ -331,6 +331,8 @@ class PlaybackSlider(QSlider, EntityBinder):
         state.on_changed('key', self._on_key_pressed)
         state.on_changed('caching', self._update_progress)
 
+        state.on_changed('closeup_camera', self._update_progress)
+
     def _on_key_pressed(self):
         if not self.isVisible():
             return
@@ -380,7 +382,6 @@ class PlaybackSlider(QSlider, EntityBinder):
 
     def _create_bar_map(self):
         self._bar_map = QPixmap(self.width(), self.height())
-        self._bar_map.fill(Qt.transparent)
         self._paint_progress()
 
     def resizeEvent(self, event):
@@ -406,6 +407,7 @@ class PlaybackSlider(QSlider, EntityBinder):
         if self._bar_map is None:
             return
 
+        self._bar_map.fill(Qt.transparent)
         painter = QPainter(self._bar_map)
 
         w = self.width()

@@ -349,6 +349,7 @@ class ShotEntity(Entity):
     def __init__(self, parent, doc):
         super().__init__(DB_SHOTS, doc)
         self._jobs = None
+        self._parent = parent
 
         # 創建時會註冊所屬專案的事件
         self.register_callback(parent.emit)
@@ -440,7 +441,7 @@ class ShotEntity(Entity):
         # Deadline integration
         log.info(f'Deadline submit shot: {self}')
 
-        deadline_ids = submit_deadline(self, job)
+        deadline_ids = submit_deadline(self._parent.name, self, job)
 
         if deadline_ids is None:
             log.error('Deadline submit server error!')
