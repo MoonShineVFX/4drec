@@ -19,6 +19,7 @@ class ModelView(QWidget):
         self._interface.setParent(self)
         self._cache = {}
 
+        self._turntable_speed = 0.0
         self._fps_counter = FPScounter(self._interface.update_fps)
 
         state.on_changed('opengl_data', self._update_geo)
@@ -41,7 +42,8 @@ class ModelView(QWidget):
     def _update_geo(self):
         if state.get('caching'):
             return
-        self._core.set_geo(state.get('opengl_data'))
+        turntable = self._turntable_speed if state.get('playing') else 0
+        self._core.set_geo(state.get('opengl_data'), turntable)
         self._fps_counter.tick()
 
     def _on_key_pressed(self):
@@ -60,6 +62,14 @@ class ModelView(QWidget):
             self._core.offset_model_shader('exposure', self._offset_parm_value)
         elif key == Qt.Key_X:
             self._core.offset_model_shader('exposure', -self._offset_parm_value)
+        elif key == Qt.Key_F:
+            self._update_turntable(-self._offset_parm_value)
+        elif key == Qt.Key_G:
+            self._update_turntable(self._offset_parm_value)
+
+    def _update_turntable(self, offset_value):
+        self._turntable_speed += offset_value
+        self._interface.update_turntable(self._turntable_speed)
 
     def _get_rig_geo(self):
         job = state.get('current_job')
@@ -77,13 +87,14 @@ class ModelInterface(QLabel):
         font-size: 13;
         color: palette(window-text);
         min-width: 200px;
-        min-height: 330px;
+        min-height: 360px;
     '''
 
     def __init__(self):
         super().__init__()
         self._vertex_count = 0
         self._shader_parms = OpenGLCore._default_shader_parms.copy()
+        self._turntable_speed = 0
         self._real_frame = -1
         self._fps = 0
 
@@ -111,6 +122,10 @@ class ModelInterface(QLabel):
         self._fps = fps
         self._update()
 
+    def update_turntable(self, turntable):
+        self._turntable_speed = turntable
+        self._update()
+
     def _update_real_frame(self):
         slider_value = state.get('current_slider_value')
         self._real_frame = get_real_frame(slider_value)
@@ -125,12 +140,16 @@ class ModelInterface(QLabel):
             '[Q/E]  Gamma Offset\n' +
             '[A/D]  Saturate Offset\n' +
             '[S/X]  Exposure Offset\n' +
+            '[R/T]  Turntable\n' +
             '[W]  Toggle Wireframe\n' +
             '[C]  Cache All Frames\n' +
             '[Z]  Reset Camera'
         )
 
         if state.get('playing'):
-            text += f'\n\nfps: {self._fps}'
+            text += (
+                f'\n\nfps: {self._fps}\n'
+                f'turntable speed: {self._turntable_speed:.1f}'
+            )
 
         self.setText(text)

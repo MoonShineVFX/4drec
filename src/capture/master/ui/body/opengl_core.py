@@ -8,6 +8,8 @@ from OpenGL.GL.shaders import *
 
 import math
 
+from utility.repeater import Repeater
+
 from .opengl_components import (
     OpenGLCamera, OpenGLObject, FloorObject, CameraObject
 )
@@ -44,6 +46,8 @@ class OpenGLCore(QOpenGLWidget):
         )
         self._camera.on_update(self._on_camera_update)
 
+        self._repeater = None
+
     def _setup_ui(self):
         self._window_size = (
             self.parentWidget().width(),
@@ -62,7 +66,7 @@ class OpenGLCore(QOpenGLWidget):
         with open(f'master/ui/body/{filename}') as f:
             return f.read()
 
-    def set_geo(self, cache):
+    def set_geo(self, cache, turntable=0):
         obj = self._objects['main']
         if cache is None:
             # clean empty
@@ -84,6 +88,14 @@ class OpenGLCore(QOpenGLWidget):
             resolution=cache[3]
         )
         self._interface.update_vertex_count(cache[0])
+
+        # turntable
+        if turntable != 0:
+            self._camera.offset_rot(
+                0,
+                turntable
+            )
+            self._camera.update()
 
         self.update()
 
