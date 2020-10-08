@@ -21,8 +21,8 @@ flow_pipeline = {
     ],
     ResolveStep.FEATURE: [
         ConvertSFM, FeatureExtraction, FeatureMatching,
-        StructureFromMotion, MaskImages, PrepareDenseSceneWithMask,
-        PrepareDenseScene, ClipLandmarks
+        StructureFromMotion, ClipLandmarks, MaskImages,
+        PrepareDenseSceneWithMask, PrepareDenseScene
     ],
     ResolveStep.DEPTH: [DepthMapEstimation],
     ResolveStep.MESH: [
