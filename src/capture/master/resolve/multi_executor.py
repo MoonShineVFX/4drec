@@ -64,14 +64,14 @@ class MultiExecutor(threading.Thread):
         import re
         from pathlib import Path
 
-        shot_name, job_id, frames, export_path = tasks
+        folder_name, job_id, frames, export_path = tasks
         load_path = (
             f'{setting.submit_job_path}{job_id}/export/'
         )
         offset_frame = frames[0] - 1
 
-        filename = re.sub(r'[^\w\d-]', '_', shot_name)
-        export_path = Path(f'{export_path}/{filename}/')
+        folder_name = re.sub(r'[^\w\d-]', '_', folder_name)
+        export_path = Path(f'{export_path}/{folder_name}/')
         # (export_path / 'obj').mkdir(parents=True, exist_ok=True)
         (export_path / 'geo').mkdir(parents=True, exist_ok=True)
         (export_path / 'texture').mkdir(parents=True, exist_ok=True)
@@ -89,7 +89,7 @@ class MultiExecutor(threading.Thread):
                 future = executor.submit(
                     export_geometry,
                     file_path,
-                    filename,
+                    folder_name,
                     offset_f,
                     str(export_path)
                 )

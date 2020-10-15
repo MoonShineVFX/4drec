@@ -11,7 +11,6 @@ class KeyingImage:
         self._effect_list = []
 
         self._initialize()
-        self.update()
 
     def _initialize(self):
         self._effect_list = [
@@ -21,7 +20,17 @@ class KeyingImage:
             ApplyMaskEffect()
         ]
 
+    def get_image(self, image_name):
+        return self._payload.get(image_name)
+
+    def get_effects(self):
+        return self._effect_list
+
     def update(self):
         self._payload.clear()
         for effect in self._effect_list:
             effect.process(self._payload)
+
+    def export(self, image_path):
+        image = self._payload.get(ImagePayload.RESULT)
+        cv2.imwrite(image_path, image)

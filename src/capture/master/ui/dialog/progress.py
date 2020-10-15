@@ -88,6 +88,7 @@ class ExportProgressDialog(ProgressDialog):
         state.cast(
             'resolve',
             'export_model',
+            state.get('current_project'),
             state.get('current_shot'),
             state.get('current_job'),
             [f + offset_frame for f in frames],

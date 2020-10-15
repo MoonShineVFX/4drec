@@ -14,6 +14,7 @@ class ImagePayload:
         image = self._data[image_name]
         if image is None:
             raise KeyError(f'No name {image_name} found in payload.')
+        return image
 
     def set(self, image_type, image_name):
         self._data[image_type] = image_name

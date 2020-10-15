@@ -10,6 +10,9 @@ class EffectStack:
         self._name = name
         self._parameters = parameters
 
+    def get_name(self):
+        return self._name
+
     def get_parameter(self, parm_name):
         for parm in self._parameters:
             if parm_name == parm.get_name():
@@ -17,6 +20,9 @@ class EffectStack:
         raise KeyError(
             f'No {parm_name} found in {self._name}.'
         )
+
+    def get_parameters(self):
+        return self._parameters
 
     def process(self, payload):
         pass
