@@ -81,6 +81,7 @@ class UIState():
         # model
         self._state['opengl_data'] = None
         self._state['tick_export'] = None
+        self._state['tick_update_geo'] = None
 
         # camera
         self._state['trigger'] = False

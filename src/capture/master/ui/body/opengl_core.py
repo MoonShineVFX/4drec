@@ -8,8 +8,6 @@ from OpenGL.GL.shaders import *
 
 import math
 
-from utility.repeater import Repeater
-
 from .opengl_components import (
     OpenGLCamera, OpenGLObject, FloorObject, CameraObject
 )

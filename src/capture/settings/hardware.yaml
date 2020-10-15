@@ -7,8 +7,9 @@ mongodb_address: '192.168.40.3:27101'
 camera_resolution: [4096, 3000]
 
 frame_rate: 30
+speed_offset: 0.83333
 
-max_display_resolution: 4096
+max_display_resolution: 3000
 
 slaves:
   - '4DK-S00'

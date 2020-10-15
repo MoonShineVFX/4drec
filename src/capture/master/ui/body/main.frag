@@ -40,8 +40,9 @@ void main() {
     vec3 hsv = RGBtoHSV(texColor.rgb);
     hsv.y *= saturate;
     vec3 srgb = HSVtoRGB(hsv.rgb);
-    colour = vec4(srgb, texColor.a);
+    colour = vec4(srgb, 1.0);
     colour = pow(colour, vec4(gamma));
     colour *= exposure;
+    colour.a = 1.0;
   }
 }

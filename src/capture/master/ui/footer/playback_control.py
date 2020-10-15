@@ -162,7 +162,7 @@ class ShotPlayer(QThread):
         self._playing = False
         self._current_loaded = 0
         self._threashold = None
-        self._sleep_time = 1 / setting.frame_rate
+        self._sleep_time = 1 / setting.frame_rate * setting.speed_offset
         self._cond = Condition()
         self._prepare()
         self.tick.connect(callback)
@@ -172,8 +172,8 @@ class ShotPlayer(QThread):
     def run(self):
         self._playing = True
         while self._playing:
-            self.tick.emit()
             start = perf_counter()
+            self.tick.emit()
             self._cond.acquire()
             self._cond.wait()
             self._cond.release()
@@ -191,8 +191,7 @@ class ShotPlayer(QThread):
                 state.on_changed('pixmap_closeup', self._loaded)
                 self._threashold += 1
         elif body_mode is BodyMode.MODEL:
-            self._threashold = 1
-            state.on_changed('opengl_data', self._loaded)
+            state.on_changed('tick_update_geo', self._notify)
 
     def _notify(self):
         self._cond.acquire()

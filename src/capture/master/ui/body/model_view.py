@@ -45,6 +45,7 @@ class ModelView(QWidget):
         turntable = self._turntable_speed if state.get('playing') else 0
         self._core.set_geo(state.get('opengl_data'), turntable)
         self._fps_counter.tick()
+        state.set('tick_update_geo', None)
 
     def _on_key_pressed(self):
         key = state.get('key')
@@ -140,7 +141,7 @@ class ModelInterface(QLabel):
             '[Q/E]  Gamma Offset\n' +
             '[A/D]  Saturate Offset\n' +
             '[S/X]  Exposure Offset\n' +
-            '[R/T]  Turntable\n' +
+            '[F/G]  Turntable\n' +
             '[W]  Toggle Wireframe\n' +
             '[C]  Cache All Frames\n' +
             '[Z]  Reset Camera'
