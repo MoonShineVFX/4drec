@@ -2,12 +2,13 @@ from PyQt5.Qt import (
     QMainWindow, QHBoxLayout, QWidget, QVBoxLayout, Qt
 )
 
-from common.keying import KeyingImage
+from common.image_processor import ImageProcessor
 
 from .image_viewer import ImageViewer
 from .info import ImageInfo
-from .effect_list import EffectList
+from .process_list import ProcessList
 from .state import state
+from .utility import update_process
 
 
 class MainWindow(QMainWindow):
@@ -16,10 +17,11 @@ class MainWindow(QMainWindow):
         self._setup_ui()
         self.show()
 
-        state.set('keying_image', KeyingImage(r"C:\Users\moonshine\Desktop\19471994_002473.jpg"))
+        state.set('image_processor', ImageProcessor(r"C:\Users\moonshine\Desktop\19471994_002473.jpg"))
+        update_process()
 
     def _setup_ui(self):
-        self.setMinimumSize(1572, 1000)
+        self.setMinimumSize(1672, 1000)
 
         widget = QWidget()
         layout = QHBoxLayout()
@@ -40,13 +42,13 @@ class SideMenu(QWidget):
         self._setup_ui()
 
     def _setup_ui(self):
-        self.setFixedWidth(200)
+        self.setFixedWidth(300)
 
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setAlignment(Qt.AlignTop)
 
         layout.addWidget(ImageInfo())
-        layout.addWidget(EffectList())
+        layout.addWidget(ProcessList())
 
         self.setLayout(layout)

@@ -1,4 +1,4 @@
-from PyQt5.Qt import QLabel, QWidget, QVBoxLayout
+from PyQt5.Qt import QLabel, QWidget, QVBoxLayout, QColor
 
 from .state import state
 
@@ -6,10 +6,11 @@ from .state import state
 class ImageInfo(QWidget):
     def __init__(self):
         super().__init__()
-        self._label = QLabel('info')
+        self._label = QLabel()
         self._setup_ui()
 
-        state.on_changed('hover_color', self._update)
+        state.on_changed('hover_color', self._update_color)
+        state.set('hover_color', QColor())
 
     def _setup_ui(self):
         layout = QVBoxLayout()
@@ -18,7 +19,7 @@ class ImageInfo(QWidget):
 
         self.setLayout(layout)
 
-    def _update(self):
+    def _update_color(self):
         color = state.get('hover_color')
         rgb = color.getRgb()
         hsv = color.getHsv()

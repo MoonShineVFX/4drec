@@ -4,8 +4,9 @@ from PyQt5.Qt import QObject, pyqtSignal
 class UIState():
     def __init__(self):
         self._state = {
-            'keying_image': None,
-            'hover_color': (-1, -1, -1)
+            'image_processor': None,
+            'hover_color': (-1, -1, -1),
+            'update_process': None
         }
 
         self._callbacks = {}

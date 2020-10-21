@@ -1,12 +1,11 @@
 from PyQt5.Qt import (
-    QPainter, QGraphicsView, QImage, QPixmap,
+    QPainter, QGraphicsView,
     QGraphicsScene, QGraphicsPixmapItem, QFrame,
     Qt, QRectF, QWidget, QVBoxLayout, QColor
 )
-import cv2
 
 from .state import state
-from common.keying import ImagePayload
+from .utility import convert_pixmap_from_cvimage
 
 
 class ImageViewer(QWidget):
@@ -14,7 +13,8 @@ class ImageViewer(QWidget):
         super().__init__()
         self._core = ImageViewerCore()
 
-        state.on_changed('keying_image', self._update_keying_image)
+        state.on_changed('image_processor', self._update)
+        state.on_changed('update_process', self._update)
 
         self._setup_ui()
 
@@ -24,32 +24,22 @@ class ImageViewer(QWidget):
         layout.addWidget(self._core)
         self.setLayout(layout)
 
-    def _update_keying_image(self):
-        image = state.get('keying_image')
+    def _update(self):
+        image = state.get('image_processor')
         if image is None:
             return
-        original = image.get_image(ImagePayload.ORIGINAL)
-        pixmap = self._convert_pixmap(original)
+        result = image.get_image()
+        if result is None:
+            return
+        pixmap = convert_pixmap_from_cvimage(result)
         self._core.set_map(pixmap)
-
-    def _convert_pixmap(self, image):
-        image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-        height, width, _ = image.shape
-        q_image = QImage(
-            image.data,
-            width,
-            height,
-            3 * width,
-            QImage.Format_RGB888
-        )
-        return QPixmap.fromImage(q_image)
 
 
 class ImageViewerCore(QGraphicsView):
     def __init__(self):
         super().__init__()
         self._zoom = 0
-        self._image = KeyingImageItem()
+        self._image = ResultImageItem()
         self._last_rect = None
 
         self._setup_ui()
@@ -67,8 +57,33 @@ class ImageViewerCore(QGraphicsView):
         self.scene().addItem(self._image)
 
     def set_map(self, pixmap):
+        fit = 0
+        if self._image.pixmap().isNull():
+            fit = 1
+        elif self._image.pixmap().rect() != pixmap.rect():
+            fit = 2
         self._image.setPixmap(pixmap)
-        self._fit_map()
+
+        if fit == 1:
+            self._fit_map()
+        elif fit == 2:
+            self._match_zoom()
+
+    def _match_zoom(self):
+        lw = self.sceneRect().width()
+        vs = self.verticalScrollBar()
+        hs = self.horizontalScrollBar()
+        vsf = vs.value() / vs.maximum()
+        hsf = hs.value() / hs.maximum()
+
+        self.setSceneRect(QRectF(self._image.pixmap().rect()))
+
+        cw = self.sceneRect().width()
+        factor = lw / cw
+        self.scale(factor, factor)
+
+        vs.setValue(int(vs.maximum() * vsf))
+        hs.setValue(int(hs.maximum() * hsf))
 
     def _fit_map(self):
         self.setDragMode(QGraphicsView.NoDrag)
@@ -120,7 +135,7 @@ class ImageViewerCore(QGraphicsView):
         self._last_rect = self.rect()
 
 
-class KeyingImageItem(QGraphicsPixmapItem):
+class ResultImageItem(QGraphicsPixmapItem):
     def __init__(self):
         super().__init__()
         self.setAcceptHoverEvents(True)
