@@ -174,6 +174,21 @@ class MaskImages(PythonFlow):
         ckernel = np.ones((6, 6), np.uint8)
         closed = cv2.morphologyEx(opened, cv2.MORPH_CLOSE, ckernel)
 
+        # remove small area
+        binary = (closed == 0).astype(np.uint8)
+        num_labels, label_map, stats, centroids = cv2.connectedComponentsWithStats(
+            binary, 4, cv2.CV_32S
+        )
+
+        keep_labels = []
+        for i in range(1, num_labels):
+            x, y, w, h, area = stats[i]
+            if area > 5000:
+                keep_labels.append(i)
+
+        matte = np.in1d(label_map, keep_labels).reshape(label_map.shape)
+        closed[~matte] = 255
+
         # apply
         img[closed == 255] = 0
 

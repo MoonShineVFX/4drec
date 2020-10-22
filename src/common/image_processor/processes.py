@@ -64,7 +64,7 @@ class FileProcess(ProcessStack):
         super().__init__(
             'File',
             [
-                FileParameter('file', '')
+                FileParameter('file', r"C:\Users\moonshine\Desktop\samples\19471994_002473.jpg")
             ]
         )
 
@@ -159,6 +159,33 @@ class MorphCloseProcess(ProcessStack):
             image[:, :, 3],
             cv2.MORPH_CLOSE, kernel
         )
+        return image
+
+
+class RemoveSmallAreaProcess(ProcessStack):
+    def __init__(self):
+        super().__init__(
+            'Remove Small Area',
+            [
+                IntParameter('threshold', 1200)
+            ]
+        )
+
+    def _process(self, image):
+        binary = (image[:, :, 3] == 0).astype(np.uint8)
+        num_labels, label_map, stats, centroids = cv2.connectedComponentsWithStats(
+            binary, 4, cv2.CV_32S
+        )
+
+        keep_labels = []
+        for i in range(1, num_labels):
+            x, y, w, h, area = stats[i]
+            if area > self.get_parameter('threshold').get_value():
+                keep_labels.append(i)
+
+        matte = np.in1d(label_map, keep_labels).reshape(label_map.shape)
+        image[~matte, 3] = 255
+
         return image
 
 

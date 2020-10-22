@@ -77,6 +77,7 @@ class ParameterField(QWidget):
         # IntParameter
         if isinstance(self._parm, IntParameter):
             spin_box = QSpinBox()
+            spin_box.setMaximum(99999)
             spin_box.setValue(self._parm.get_value())
             spin_box.valueChanged.connect(self._update)
             layout.addWidget(spin_box)

@@ -15,6 +15,7 @@ class ImageProcessor:
             ChromaKeyingProcess(),
             MorphOpenProcess(),
             MorphCloseProcess(),
+            RemoveSmallAreaProcess(),
             ApplyMaskProcess()
         ]
 
