@@ -2,14 +2,15 @@ from define import ResolveStep
 
 from .feature import (
     ConvertSFM, FeatureExtraction, FeatureMatching, StructureFromMotion,
-    MaskImages, PrepareDenseSceneWithMask, PrepareDenseScene, ClipLandmarks
+    MaskImages, PrepareDenseSceneWithMask, PrepareDenseSceneOnlyMask,
+    PrepareDenseScene, ClipLandmarks
 )
 from .calibrate import (
     ConstructFromAruco, GenerateSFM, TransformStructure, AlignStructure
 )
 from .depth import DepthMapEstimation
 from .mesh import (
-    DepthMapFiltering, Meshing, MeshFiltering, MeshClipping,
+    DepthMapMasking, DepthMapFiltering, Meshing, MeshFiltering, MeshClipping,
     MeshDecimate, Texturing, Package, OptimizeStorage
 )
 
@@ -22,11 +23,12 @@ flow_pipeline = {
     ResolveStep.FEATURE: [
         ConvertSFM, FeatureExtraction, FeatureMatching,
         StructureFromMotion, ClipLandmarks, MaskImages,
-        PrepareDenseSceneWithMask, PrepareDenseScene
+        PrepareDenseSceneWithMask, PrepareDenseSceneOnlyMask,
+        PrepareDenseScene
     ],
     ResolveStep.DEPTH: [DepthMapEstimation],
     ResolveStep.MESH: [
-        DepthMapFiltering, Meshing,  MeshFiltering,
+        DepthMapMasking, DepthMapFiltering, Meshing,  MeshFiltering,
         MeshClipping, MeshDecimate,
         Texturing, Package, OptimizeStorage
     ]

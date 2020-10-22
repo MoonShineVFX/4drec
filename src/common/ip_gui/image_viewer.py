@@ -73,17 +73,19 @@ class ImageViewerCore(QGraphicsView):
         lw = self.sceneRect().width()
         vs = self.verticalScrollBar()
         hs = self.horizontalScrollBar()
-        vsf = vs.value() / vs.maximum()
-        hsf = hs.value() / hs.maximum()
+
+        if self._zoom != 0:
+            vsf = vs.value() / vs.maximum()
+            hsf = hs.value() / hs.maximum()
 
         self.setSceneRect(QRectF(self._image.pixmap().rect()))
-
         cw = self.sceneRect().width()
         factor = lw / cw
         self.scale(factor, factor)
 
-        vs.setValue(int(vs.maximum() * vsf))
-        hs.setValue(int(hs.maximum() * hsf))
+        if self._zoom != 0:
+            vs.setValue(int(vs.maximum() * vsf))
+            hs.setValue(int(hs.maximum() * hsf))
 
     def _fit_map(self):
         self.setDragMode(QGraphicsView.NoDrag)

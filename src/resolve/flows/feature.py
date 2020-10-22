@@ -157,8 +157,8 @@ class MaskImages(PythonFlow):
         import numpy as np
         from pathlib import Path
 
-        lower_green = np.array([55, 32, 20])
-        upper_green = np.array([70, 62, 255])
+        lower_green = np.array([53, 36, 60])
+        upper_green = np.array([74, 95, 180])
 
         img = cv2.imread(image_file)
 
@@ -169,9 +169,10 @@ class MaskImages(PythonFlow):
         mask = cv2.inRange(hsv, lower_green, upper_green)
 
         # smooth
-        kernel = np.ones((3, 3), np.uint8)
-        opened = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
-        closed = cv2.morphologyEx(opened, cv2.MORPH_CLOSE, kernel)
+        okernel = np.ones((7, 7), np.uint8)
+        opened = cv2.morphologyEx(mask, cv2.MORPH_OPEN, okernel)
+        ckernel = np.ones((6, 6), np.uint8)
+        closed = cv2.morphologyEx(opened, cv2.MORPH_CLOSE, ckernel)
 
         # apply
         img[closed == 255] = 0
@@ -235,6 +236,27 @@ class PrepareDenseSceneWithMask(Flow):
                 'input': ClipLandmarks.get_file_path('sfm'),
                 'output': self.get_folder_path(),
                 'imagesFolders': MaskImages.get_folder_path()
+            }
+        )
+
+
+class PrepareDenseSceneOnlyMask(Flow):
+    def __init__(self):
+        super(PrepareDenseSceneOnlyMask, self).__init__()
+
+    def _make_command(self):
+        if process.setting.is_cali():
+            return
+        return FlowCommand(
+            execute=(
+                process.setting.alicevision_path +
+                'aliceVision_prepareDenseScene'
+            ),
+            args={
+                'input': ClipLandmarks.get_file_path('sfm'),
+                'output': self.get_folder_path(),
+                'imagesFolders': MaskImages.get_folder_path() + 'matte/',
+                'outputFileType': 'png'
             }
         )
 

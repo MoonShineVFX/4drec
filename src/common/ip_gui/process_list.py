@@ -5,7 +5,9 @@ from PyQt5.Qt import (
 from .state import state
 from .range_slider import RangeSlider, RangeLabel
 from .color_picker import ColorPicker
+from .file_picker import FilePicker
 from .utility import update_process
+
 from common.image_processor.parameter import *
 
 
@@ -95,6 +97,12 @@ class ParameterField(QWidget):
             color_picker.valueChanged.connect(self._update)
 
             layout.addWidget(color_picker)
+        # FileParameter
+        elif isinstance(self._parm, FileParameter):
+            file_picker = FilePicker()
+            file_picker.valueChanged.connect(self._update)
+
+            layout.addWidget(file_picker)
 
         self.setLayout(layout)
 

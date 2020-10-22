@@ -33,3 +33,8 @@ class RangeParameter(Parameter):
 class ColorParameter(Parameter):
     def __init__(self, name, default_value):
         super().__init__(name, default_value)
+
+
+class FileParameter(Parameter):
+    def __init__(self, name, default_value):
+        super().__init__(name, default_value)

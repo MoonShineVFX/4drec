@@ -4,10 +4,77 @@ from reference import process
 from .feature import (
     FeatureExtraction, ClipLandmarks, FeatureMatching,
     PrepareDenseScene, StructureFromMotion, ConvertSFM,
-    PrepareDenseSceneWithMask, MaskImages
+    PrepareDenseSceneWithMask, MaskImages, PrepareDenseSceneOnlyMask
 )
 from .flow import Flow, FlowCommand, PythonFlow
 from .depth import DepthMapEstimation
+
+
+class DepthMapMasking(PythonFlow):
+    def __init__(self):
+        super(DepthMapMasking, self).__init__()
+
+    @staticmethod
+    def apply_mask_to_exr(exr_path, mask_path, mask_value, output_path):
+        import OpenEXR
+        import Imath
+        import numpy as np
+        import cv2
+
+        load_file = OpenEXR.InputFile(exr_path)
+
+        header = load_file.header()
+        downscale = header['AliceVision:downscale']
+        dw = header['dataWindow']
+        size = (dw.max.x - dw.min.x + 1, dw.max.y - dw.min.y + 1)
+
+        channel_type = header['channels']['Y'].type
+        buf = load_file.channel('Y', channel_type)
+        np_type = np.float32 if channel_type == Imath.PixelType(Imath.PixelType.FLOAT) else np.float16
+        arr = np.frombuffer(buf, dtype=np_type).copy()
+        arr.shape = (size[1], size[0])
+        load_file.close()
+
+        # load mask
+        mask_image = cv2.imread(mask_path)
+        mask = cv2.resize(mask_image, None, fx=1 / downscale, fy=1 / downscale)
+        mask = mask[:, :, 0]
+        arr[mask == 255] = mask_value
+
+        # save
+        out_file = OpenEXR.OutputFile(output_path, header)
+        out_file.writePixels({'Y': arr.tobytes()})
+        out_file.close()
+
+        return output_path
+
+    def run_python(self):
+        from pathlib import Path
+        from concurrent.futures import ProcessPoolExecutor, as_completed
+
+        # start
+        depth_folder = DepthMapEstimation.get_folder_path()
+        export_path = self.get_folder_path()
+        mask_folder = Path(PrepareDenseSceneOnlyMask.get_folder_path())
+
+        with ProcessPoolExecutor() as executor:
+            future_list = []
+
+            for mask_path in mask_folder.glob('*.png'):
+                for suffix, mask_value in (('depthMap', -1), ('simMap', 1)):
+                    camera_id = mask_path.stem
+                    filename = f'{camera_id}_{suffix}.exr'
+                    exr_path = f'{depth_folder}{filename}'
+                    output_path = f'{export_path}{filename}'
+                    future = executor.submit(
+                        DepthMapMasking.apply_mask_to_exr,
+                        exr_path, str(mask_path), mask_value, output_path
+                    )
+                    future_list.append(future)
+
+            for future in as_completed(future_list):
+                result = future.result()
+                process.log_info(result)
 
 
 class DepthMapFiltering(Flow):
@@ -22,7 +89,7 @@ class DepthMapFiltering(Flow):
             ),
             args={
                 'input': ClipLandmarks.get_file_path('sfm'),
-                'depthMapsFolder': DepthMapEstimation.get_folder_path(),
+                'depthMapsFolder': DepthMapMasking.get_folder_path(),
                 'output': self.get_folder_path(),
             },
             override=self.get_parameters()
@@ -245,11 +312,13 @@ class OptimizeStorage(PythonFlow):
     def run_python(self):
         PrepareDenseScene._clean_folder()
         PrepareDenseSceneWithMask._clean_folder()
+        PrepareDenseSceneOnlyMask._clean_folder()
         MaskImages._clean_folder()
         Meshing._clean_folder()
         FeatureExtraction._clean_folder()
         DepthMapEstimation._clean_folder()
         DepthMapFiltering._clean_folder()
+        DepthMapMasking._clean_folder()
         StructureFromMotion._clean_folder()
         MeshFiltering._clean_folder()
         MeshClipping._clean_folder()

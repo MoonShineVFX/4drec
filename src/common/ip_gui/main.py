@@ -17,7 +17,7 @@ class MainWindow(QMainWindow):
         self._setup_ui()
         self.show()
 
-        state.set('image_processor', ImageProcessor(r"C:\Users\moonshine\Desktop\19471994_002473.jpg"))
+        state.set('image_processor', ImageProcessor())
         update_process()
 
     def _setup_ui(self):

@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+from pathlib import Path
 
 from .parameter import *
 
@@ -17,17 +18,17 @@ class ProcessStack:
             parm.on_changed(self.set_modified)
 
     def is_enabled(self):
-        self.set_modified()
         return self._enabled
 
     def set_enabled(self, enabled):
+        self.set_modified()
         self._enabled = enabled
 
     def is_modified(self):
         return self._modified
 
-    def set_modified(self):
-        self._modified = True
+    def set_modified(self, toggle=True):
+        self._modified = toggle
 
     def get_name(self):
         return self._name
@@ -52,10 +53,28 @@ class ProcessStack:
         return
 
     def process(self, image):
-        self._modified = False
+        self.set_modified(False)
         if not self.is_enabled():
             return
         self._result = self._process(image)
+
+
+class FileProcess(ProcessStack):
+    def __init__(self):
+        super().__init__(
+            'File',
+            [
+                FileParameter('file', '')
+            ]
+        )
+
+    def _process(self, image):
+        file_path = self.get_parameter('file').get_value()
+        if not Path(file_path).is_file():
+            return np.zeros((100, 100, 4), dtype=np.uint8)
+        image = cv2.imread(file_path)
+        image = cv2.cvtColor(image, cv2.COLOR_RGB2RGBA)
+        return image
 
 
 class ResizeProcess(ProcessStack):
@@ -69,6 +88,8 @@ class ResizeProcess(ProcessStack):
 
     def _process(self, image):
         factor = self.get_parameter('factor').get_value()
+        if factor <= 1:
+            return image
         image = cv2.resize(image, None, fx=1 / factor, fy=1 / factor)
         return image
 
