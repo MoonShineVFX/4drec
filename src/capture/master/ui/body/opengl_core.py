@@ -220,6 +220,7 @@ class OpenGLCore(QOpenGLWidget):
             )
 
     def paintGL(self):
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         for obj in self._objects.values():
             if obj.is_visible():
                 obj.render()
