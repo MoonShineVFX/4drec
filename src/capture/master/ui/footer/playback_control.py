@@ -230,7 +230,7 @@ class PlaybackBar(LayoutWidget):
 
         for i in range(2):
             label = QLabel()
-            label.setMinimumWidth(80)
+            label.setMinimumWidth(50)
             if i == 0:
                 label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
             elif i == 1:

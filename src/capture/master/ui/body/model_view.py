@@ -1,4 +1,4 @@
-from PyQt5.Qt import QLabel, QWidget, Qt
+from PyQt5.Qt import QLabel, QWidget, Qt, QRect, QPixmap
 
 from utility.define import BodyMode
 from utility.fps_counter import FPScounter
@@ -45,6 +45,12 @@ class ModelView(QWidget):
         turntable = self._turntable_speed if state.get('playing') else 0
         self._core.set_geo(state.get('opengl_data'), turntable)
         self._fps_counter.tick()
+
+        # screenshot
+        screenshot_path = state.get('screenshot_export_path')
+        if screenshot_path is not None:
+            self._take_screenshot(screenshot_path)
+
         state.set('tick_update_geo', None)
 
     def _on_key_pressed(self):
@@ -81,6 +87,12 @@ class ModelView(QWidget):
         state.cast(
             'resolve', 'request_geometry', job, None
         )
+
+    def _take_screenshot(self, export_path):
+        frame = state.get('current_slider_value')
+        rect = QRect(0, 0, self._core.width(), self._core.height())
+        pixmap = self._core.grab(rect)
+        pixmap.save(f'{export_path}/{frame:06d}.png')
 
 
 class ModelInterface(QLabel):

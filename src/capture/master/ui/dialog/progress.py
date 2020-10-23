@@ -1,4 +1,6 @@
 from PyQt5.Qt import QDialog, QProgressBar, Qt
+from pathlib import Path
+import re
 
 from utility.setting import setting
 from utility.define import BodyMode
@@ -94,6 +96,35 @@ class ExportProgressDialog(ProgressDialog):
             [f + offset_frame for f in frames],
             self._export_path
         )
+
+
+class ScreenshotProgressDialog(ProgressDialog):
+    def __init__(self, parent, export_path):
+        self._export_path = export_path
+        super().__init__(parent, 'Grab Preview', len(state.get('frames')))
+
+    def _prepare(self):
+        project = state.get('current_project')
+        shot = state.get('current_shot')
+        job = state.get('current_job')
+        folder_name = f'{project.name}_{shot.name}_{job.name}'
+        folder_name = re.sub(r'[^\w\d-]', '_', folder_name)
+        path = Path(self._export_path)
+        path = path.joinpath(folder_name)
+        path.mkdir(exist_ok=True, parents=True)
+        state.set('screenshot_export_path', str(path))
+        state.on_changed('tick_update_geo', self._play_next)
+
+    def _on_show(self):
+        state.set('current_slider_value', 0)
+
+    def _on_close(self):
+        state.set('screenshot_export_path', None)
+
+    def _play_next(self):
+        self.increase()
+        state.set('current_slider_value', self._progress_bar.value())
+
 
 class CacheProgressDialog(ProgressDialog):
     def __init__(self, parent):

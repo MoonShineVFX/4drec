@@ -60,6 +60,8 @@ wireframe_hl 30
 rig_hl 30
 loop 30
 loop_hl 30
+screenshot 30
+screenshot_hl 30
 
 -- project list
 resolve 18

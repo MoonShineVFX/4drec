@@ -5,7 +5,7 @@ reference:
     - ['E0', 0.15198]
 
 clip_range:
-  height: 3
+  height: 2.5
   diameter: 3.5
   ground: -0.1
 
