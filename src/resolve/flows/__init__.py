@@ -21,8 +21,10 @@ flow_pipeline = {
         TransformStructure, AlignStructure
     ],
     ResolveStep.FEATURE: [
-        ConvertSFM, FeatureExtraction, FeatureMatching,
-        StructureFromMotion, ClipLandmarks, MaskImages,
+        ConvertSFM,
+        FeatureExtraction, FeatureMatching,
+        StructureFromMotion, ClipLandmarks,
+        MaskImages,
         PrepareDenseSceneWithMask, PrepareDenseSceneOnlyMask,
         PrepareDenseScene
     ],

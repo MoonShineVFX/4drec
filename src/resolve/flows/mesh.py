@@ -115,6 +115,7 @@ class Meshing(Flow):
                 'input': ClipLandmarks.get_file_path('sfm'),
                 'depthMapsFolder': DepthMapEstimation.get_folder_path(),
                 'depthMapsFilterFolder': DepthMapFiltering.get_folder_path(),
+                # 'depthMapsFolder': DepthMapFiltering.get_folder_path(),
                 'output': self.get_file_path('dense'),
                 'outputMesh': self.get_file_path('obj'),
             },

@@ -71,6 +71,7 @@ class FeatureMatching(Flow):
             args={
                 'input': ConvertSFM.get_file_path('sfm'),
                 'featuresFolders': FeatureExtraction.get_folder_path(),
+                # 'matchFromKnownCameraPoses': 1,
                 'output': self.get_folder_path(),
             },
             override=self.get_parameters()

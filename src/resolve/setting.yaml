@@ -54,7 +54,7 @@ flows:
     textureSide: 4096
     useUDIM: 1
     downscale: 1
-    unwrapMethod: 'Basic'
+    unwrapMethod: 'ABF'
     # 'useScore': 0,
     # 'bestScoreThreshold': 0,
     # 'angleHardThreshold': 0,
