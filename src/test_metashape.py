@@ -16,7 +16,7 @@ if __name__ == '__main__':
     project = MetashapeProject()
     # project.initial()
     # project.calibrate()
-    project.resolve()
+    # project.resolve()
 
     # for f in range(5981, 6012):
     #     print(f'=================== {f} =================== ')

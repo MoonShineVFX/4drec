@@ -38,6 +38,43 @@ class FourdFrameManager:
         return cls.header.copy()
 
     @classmethod
+    def save_from_metashape(
+            cls, geo_arr, tex_arr, save_path, frame, **kwargs
+    ):
+        header = cls.get_header_template()
+        header.update({
+            'frame': frame,
+            **kwargs
+        })
+
+        # geo
+        print('Convert geo')
+        geo_buffer = lz4framed.compress(geo_arr.tobytes())
+        header['geo_buffer_size'] = len(geo_buffer)
+        header['geo_faces'] = int(len(geo_arr[0]) / 3)
+
+        # texture
+        print('Convert texture')
+        tex_arr = np.copy(tex_arr)
+        texture_buffer = jpeg_coder.encode(
+            tex_arr, quality=header['texture_quality']
+        )
+        header['texture_buffer_size'] = len(texture_buffer)
+        header['texture_width'] = tex_arr.shape[1]
+        header['texture_height'] = tex_arr.shape[0]
+
+        # pack
+        print('save 4dp')
+        header_buffer = struct.pack(cls.header_format, *header.values())
+        header_buffer = header_buffer.ljust(cls.header_size, b'\0')
+
+        with open(save_path, 'wb') as f:
+            for buffer in (
+                    header_buffer, geo_buffer, texture_buffer
+            ):
+                f.write(buffer)
+
+    @classmethod
     def save(
             cls,
             save_path, obj_path, jpg_path,
@@ -124,7 +161,7 @@ class FourdFrameManager:
             header['sfm_parameters_buffer_size'] = len(sfm_parameters_buffer)
 
         # pack
-        print('save 4dp')
+        print('save 4df')
         header_buffer = struct.pack(cls.header_format, *header.values())
         header_buffer = header_buffer.ljust(cls.header_size, b'\0')
 
