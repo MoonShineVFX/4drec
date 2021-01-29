@@ -10,8 +10,14 @@ _location = os.path.realpath(
 class CameraStructure:
     def __init__(self):
         self._yaml = {}  # 設定資料
-        
-        yaml_file = os.path.join(_location, 'camera_structure.yaml')
+
+        filename = 'camera_structure.yaml'
+        local_file = f'../settings_local/{filename}'
+
+        if os.path.isfile(local_file):
+            yaml_file = local_file
+        else:
+            yaml_file = os.path.join(_location, filename)
 
         with open(yaml_file, 'r') as f:
             self._yaml = yaml.load(f, Loader=yaml.FullLoader)

@@ -95,7 +95,10 @@ class CameraConnector(Process):
         self._camera = self._cameras.GetByIndex(self._camera_index)
 
         # set attribute
-        self._id = self._camera.GetUniqueID()
+        nodemap_tldevice = self._camera.GetTLDeviceNodeMap()
+        self._id = PySpin.CStringPtr(
+            nodemap_tldevice.GetNode("DeviceSerialNumber")
+        ).GetValue()
         self._configurator = CameraConfigurator(self._camera, self._log)
         # self._log = get_prefix_log(f'<{self._id}> ')
 
@@ -148,8 +151,9 @@ class CameraConnector(Process):
                     image_ptr.GetHeight()
                 )
 
-                if self._is_live_view and not self._is_recording:
-                    self._live_viewer.set_buffer(camera_image)
+                if self._is_live_view:
+                    if not self._is_recording or not setting.is_stop_liveview_when_recording():
+                        self._live_viewer.set_buffer(camera_image)
 
                 if self._is_recording:
                     self._recorder.add_task(

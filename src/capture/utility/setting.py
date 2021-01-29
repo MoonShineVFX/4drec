@@ -27,6 +27,13 @@ class SettingManager(CameraStructure):
         with open('../resolve/setting.yaml', 'r') as f:
             self._settings['resolve'] = yaml.load(f, Loader=yaml.FullLoader)
 
+        # override setting local
+        if os.path.isdir('../settings_local'):
+            files = list(glob.glob('../settings_local/*.yaml'))
+            for file in files:
+                with open(file, 'r') as f:
+                    self._settings.update(yaml.load(f, Loader=yaml.FullLoader))
+
         # 如果是 slave 就建立錄製資料夾
         if not self.is_master():
             self._make_record_folder()
@@ -98,8 +105,10 @@ class SettingManager(CameraStructure):
     def get_slave_cameras_count(self):
         camera_count = 0
         slave_index = self.get_slave_index()
-        start_idx = slave_index * 3
-        for camera_id in self.get_camera_numbers_by_position_order()[start_idx:start_idx + 3]:
+        start_idx = slave_index * self.cameras_per_slave
+        for camera_id in self.get_camera_numbers_by_position_order()[
+            start_idx:start_idx +  self.cameras_per_slave
+        ]:
             if camera_id is not None:
                 camera_count += 1
         return camera_count
@@ -118,6 +127,12 @@ class SettingManager(CameraStructure):
 
     def apply(self, data):
         self._settings.update(data)
+
+    def is_stop_liveview_when_recording(self):
+        return self._settings['stop_liveview_when_recording']
+
+    def is_disable_deadline(self):
+        return self._settings['disable_submit_deadline']
 
 
 class SettingProperty(dict):

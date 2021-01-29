@@ -5,6 +5,7 @@ host_address:
 mongodb_address: '192.168.40.3:27101'
 
 camera_resolution: [4096, 3000]
+camera_offset: [0, 0]
 
 frame_rate: 30
 speed_offset: 1 # 0.83333
@@ -28,3 +29,9 @@ slaves:
   - '4DK-S13'
   - '4DK-S14'
   - '4DK-S15'
+
+cameras_per_slave: 3
+
+stop_liveview_when_recording: true
+
+disable_submit_deadline: false

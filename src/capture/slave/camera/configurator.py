@@ -37,6 +37,12 @@ class CameraConfigurator(MixThread):
         'TLStream.StreamBufferHandlingMode':
             PySpin.StreamBufferHandlingMode_OldestFirst,
 
+        # 相機捕捉範圍
+        'Width': setting.camera_resolution[0],
+        'Height': setting.camera_resolution[1],
+        'OffsetX': setting.camera_offset[0],
+        'OffsetY': setting.camera_offset[1],
+
         # 格率
         'AcquisitionFrameRateEnable': True,
         'AcquisitionFrameRate': setting.frame_rate,

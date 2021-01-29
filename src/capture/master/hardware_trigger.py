@@ -29,7 +29,9 @@ class HardwareTrigger():
 
     def get_arduino(self):
         for pinfo in serial.tools.list_ports.comports():
-            if 'CH340' in pinfo.description:
+            desc = pinfo.description
+            if 'CH340' in desc or \
+                'Arduino' in desc:
                 return pinfo.device
         raise IOError('Cound not find an arduino')
 

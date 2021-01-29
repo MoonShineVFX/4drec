@@ -6,6 +6,8 @@ from master.ui.popup import popup
 from master.ui.dialog import ShotSubmitDialog, SubmitProgressDialog
 from master.ui.state import state
 
+from utility.setting import setting
+
 from .support_button import SupportButtonGroup
 
 
@@ -66,9 +68,14 @@ class SubmitButton(PushButton):
             'project', 'check_deadline_server'
         )
 
+    def _get_submit_text(self):
+        if setting.is_disable_deadline():
+            return 'Transfer'
+        return self._submit_text
+
     def _update(self):
         check_result = state.get('deadline_status')
-        self.setText(self._submit_text if check_result else self._connect_text)
+        self.setText(self._get_submit_text() if check_result else self._connect_text)
         self._is_server_on = check_result
 
         if check_result:

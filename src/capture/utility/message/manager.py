@@ -53,7 +53,10 @@ class MessageManager(MixThread):
         connect_queue = queue.Queue()
 
         sock = self._build_socket()
-        sock.bind(('0.0.0.0', setting.host_address.port))
+        sock.bind(
+            (setting.host_address.ip,
+             setting.host_address.port)
+        )
 
         # 聆聽連線
         sock.listen(6)
@@ -136,7 +139,7 @@ class MessageManager(MixThread):
                     connected = False  # connected 的設置是避免不斷報錯
                     if error.errno == 10054:
                         if current_process().name == 'MainProcess':
-                            log.info('hihi')
+                            log.warning('10054 MainProcess error')
 
                 self._node.clear()
 

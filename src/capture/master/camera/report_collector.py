@@ -5,6 +5,7 @@ from utility.logger import log
 from utility.define import MessageType, UIEventType
 
 from master.projects import project_manager
+from master.ui import ui
 
 
 class CameraReportCollector():
@@ -262,7 +263,18 @@ class SubmitReportContainer(ReportContainer):
 
     def _summarize_report(self):
         """總結"""
-        self._shot.submit(self._name, self._frames, self._parameters)
+        if setting.is_disable_deadline():
+            ui.dispatch_event(
+                UIEventType.NOTIFICATION,
+                {
+                    'title': f'[{self._name}] Transfer Success',
+                    'description': (
+                        f'Shot [{self._name}] transfer with {len(self._frames)} frames.'
+                    )
+                }
+            )
+        else:
+            self._shot.submit(self._name, self._frames, self._parameters)
 
     def get_job_name(self):
         return self._name

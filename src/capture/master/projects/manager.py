@@ -1,6 +1,7 @@
 from utility.logger import log
 from utility.message import message_manager
 from utility.define import EntityEvent, UIEventType, MessageType
+from utility.setting import setting
 
 from master.ui import ui
 
@@ -207,6 +208,13 @@ class ProjectManager():
         return memory / (1024 ** 3)
 
     def check_deadline_server(self):
+        if setting.is_disable_deadline():
+            ui.dispatch_event(
+                UIEventType.DEADLINE_STATUS,
+                True
+            )
+            return
+
         check_result = check_deadline_server()
         if check_result != '':
             ui.dispatch_event(
