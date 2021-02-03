@@ -3,6 +3,7 @@ from PyQt5.Qt import QMainWindow, QApplication, Qt, QWidget
 
 from utility.define import UIEventType, BodyMode, CameraState
 from utility.logger import log
+from utility.setting import setting
 
 
 class MainWindow(QMainWindow):
@@ -49,7 +50,12 @@ class MainWindow(QMainWindow):
         log.info('finish widgets')
 
         # 尺寸
-        self.setGeometry(100, 80, 1600, 1100)
+        self.setGeometry(
+            setting.windows_startup.x,
+            setting.windows_startup.y,
+            setting.windows_startup.w,
+            setting.windows_startup.h
+        )
 
         # 版面
         widget = LayoutWidget(horizon=False)
@@ -221,6 +227,9 @@ class MainWindow(QMainWindow):
 
     def keyPressEvent(self, event):
         self._state.set('key', event.key())
+
+    def resizeEvent(self, event):
+        print(self.size())
 
     def closeEvent(self, event):
         """關閉視窗"""

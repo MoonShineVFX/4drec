@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 
 from common.jpeg_coder import jpeg_coder
+from utility.setting import setting
 
 
 class CameraImage():
@@ -26,6 +27,10 @@ class CameraImage():
         im = np.frombuffer(self._data, dtype=np.uint8)
         im = im.reshape((self._height, self._width))
         im = cv2.cvtColor(im, cv2.COLOR_BAYER_RG2RGB)
+
+        if setting.camera_rotation != 0:
+            im = cv2.rotate(im, cv2.ROTATE_180)
+
         return im
 
     def _rescale(self, image, scale_length):

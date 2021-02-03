@@ -35,3 +35,15 @@ cameras_per_slave: 3
 stop_liveview_when_recording: true
 
 disable_submit_deadline: false
+
+camera_views_per_row:
+  all: 8
+  closeup: 3
+
+camera_rotation: 0
+
+windows_startup:
+  x: 100
+  y: 80
+  w: 1600
+  h: 1100
