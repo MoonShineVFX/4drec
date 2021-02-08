@@ -228,8 +228,8 @@ class MainWindow(QMainWindow):
     def keyPressEvent(self, event):
         self._state.set('key', event.key())
 
-    def resizeEvent(self, event):
-        print(self.size())
+    # def resizeEvent(self, event):
+    #     print(self.size())
 
     def closeEvent(self, event):
         """關閉視窗"""
