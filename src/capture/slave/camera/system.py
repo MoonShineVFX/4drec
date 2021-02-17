@@ -33,6 +33,7 @@ class CameraSystem:
             self._camera_system = PySpin.System.GetInstance()
             self._camera_list = self._camera_system.GetCameras()
             current_cameras_count = self._camera_list.GetSize()
+
             setting_cameras_count = setting.get_slave_cameras_count()
 
             # 相機數量不對的狀況

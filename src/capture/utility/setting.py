@@ -107,7 +107,7 @@ class SettingManager(CameraStructure):
         slave_index = self.get_slave_index()
         start_idx = slave_index * self.cameras_per_slave
         for camera_id in self.get_camera_numbers_by_position_order()[
-            start_idx:start_idx +  self.cameras_per_slave
+            start_idx:start_idx + self.cameras_per_slave
         ]:
             if camera_id is not None:
                 camera_count += 1

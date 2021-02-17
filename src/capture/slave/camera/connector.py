@@ -12,6 +12,7 @@ from .configurator import CameraConfigurator
 from .shot import CameraShotFileCore, CameraShotMeta
 from .image import CameraImage
 from .receiver import Receiver
+from .streamer import CameraStreamer
 
 
 class CameraConnector(Process):
@@ -41,7 +42,8 @@ class CameraConnector(Process):
         self._log = logger
 
         # 即時預覽
-        self._live_viewer = None
+        # self._live_viewer = None
+        self._streamer = None
 
         # 錄製
         self._recorder = None
@@ -103,7 +105,8 @@ class CameraConnector(Process):
         # self._log = get_prefix_log(f'<{self._id}> ')
 
         # set child threads
-        self._live_viewer = CameraLiveViewer(self._id)
+        # self._live_viewer = CameraLiveViewer(self._id)
+        self._streamer = CameraStreamer(self._id)
         self._receiver = Receiver(self, self._log)
         self._shot_loader = CameraShotLoader(self._log)
         self._submitter = CameraShotSubmitter(self._log)
@@ -145,25 +148,26 @@ class CameraConnector(Process):
 
             # 判斷是否有開啟即時預覽或錄製，有的情況才執行影像處理
             if self._is_live_view or self._is_recording:
-                camera_image = CameraImage(
-                    image_ptr.GetData(),
-                    image_ptr.GetWidth(),
-                    image_ptr.GetHeight()
-                )
+                # camera_image = CameraImage(
+                #     image_ptr.GetData(),
+                #     image_ptr.GetWidth(),
+                #     image_ptr.GetHeight()
+                # )
 
                 if self._is_live_view:
                     if not self._is_recording or not setting.is_stop_liveview_when_recording():
-                        self._live_viewer.set_buffer(camera_image)
+                        # self._live_viewer.set_buffer(camera_image)
+                        self._streamer.add_buffer(image_ptr.GetData())
 
-                if self._is_recording:
-                    self._recorder.add_task(
-                        self._current_frame,
-                        camera_image
-                    )
-
-                    if self._stop_sign:
-                        if len(self._recorder.get_record_frames()) > 0:
-                            self._stop_recording()
+                # if self._is_recording:
+                #     self._recorder.add_task(
+                #         self._current_frame,
+                #         camera_image
+                #     )
+                #
+                #     if self._stop_sign:
+                #         if len(self._recorder.get_record_frames()) > 0:
+                #             self._stop_recording()
 
             image_ptr.Release()
 
@@ -263,10 +267,10 @@ class CameraConnector(Process):
 
         """
         self._log.info('Start LiveView')
-        self._live_viewer.apply_encode_parms({
-            'quality': quality,
-            'scale_length': scale_length
-        })
+        # self._live_viewer.apply_encode_parms({
+        #     'quality': quality,
+        #     'scale_length': scale_length
+        # })
         self._is_live_view = True
 
     def stop_live_view(self):
@@ -340,8 +344,10 @@ class CameraConnector(Process):
         self._log.debug('Stop submitter')
         self._configurator.stop()
         self._log.debug('Stop configurator')
-        self._live_viewer.stop()
-        self._log.debug('Stop live viewer')
+        # self._live_viewer.stop()
+        # self._log.debug('Stop live viewer')
+        self._streamer.stop()
+        self._log.debug('Stop streamer')
         self._shot_loader.stop()
         self._log.debug('Stop shot loader')
         del self._camera

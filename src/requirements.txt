@@ -28,6 +28,7 @@ pywin32==227
 PyYAML==5.3.1
 spinnaker-python==2.3.0.77
 tokenize-rt==4.0.0
+vidgear==0.2.0
 Werkzeug==1.0.1
 win10toast==0.9
 win32-setctime==1.0.1
