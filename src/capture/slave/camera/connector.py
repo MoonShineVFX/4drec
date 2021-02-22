@@ -95,6 +95,7 @@ class CameraConnector(Process):
 
         # get camera
         self._camera = self._cameras.GetByIndex(self._camera_index)
+        # self._camera = self._cameras.GetBySerial('18108244')
 
         # set attribute
         nodemap_tldevice = self._camera.GetTLDeviceNodeMap()
@@ -106,7 +107,6 @@ class CameraConnector(Process):
 
         # set child threads
         # self._live_viewer = CameraLiveViewer(self._id)
-        self._streamer = CameraStreamer(self._id)
         self._receiver = Receiver(self, self._log)
         self._shot_loader = CameraShotLoader(self._log)
         self._submitter = CameraShotSubmitter(self._log)
@@ -154,20 +154,22 @@ class CameraConnector(Process):
                 #     image_ptr.GetHeight()
                 # )
 
-                if self._is_live_view:
-                    if not self._is_recording or not setting.is_stop_liveview_when_recording():
-                        # self._live_viewer.set_buffer(camera_image)
-                        self._streamer.add_buffer(image_ptr.GetData())
+                # if self._is_live_view:
+                #     if not self._is_recording or not setting.is_stop_liveview_when_recording():
+                #         self._live_viewer.set_buffer(camera_image)
 
-                # if self._is_recording:
-                #     self._recorder.add_task(
-                #         self._current_frame,
-                #         camera_image
-                #     )
-                #
-                #     if self._stop_sign:
-                #         if len(self._recorder.get_record_frames()) > 0:
-                #             self._stop_recording()
+                if self._is_recording:
+                    # self._recorder.add_task(
+                    #     self._current_frame,
+                    #     camera_image
+                    # )
+                    self._streamer.add_buffer(image_ptr.GetData())
+
+                    if self._stop_sign:
+                        # if len(self._recorder.get_record_frames()) > 0:
+                        #     self._stop_recording()
+                        self._streamer.stop()
+                        self._stop_recording()
 
             image_ptr.Release()
 
@@ -239,17 +241,18 @@ class CameraConnector(Process):
 
         """
         self._log.info('Start recording')
-        shot_meta = CameraShotMeta(
-            {'shot_id': shot_id, 'camera_id': self._id, 'is_cali': is_cali},
-            self.get_shot_file_path_for_recording(shot_id)
-        )
-        self._recorder = CameraRecorder(shot_meta, self._log)
+        # shot_meta = CameraShotMeta(
+        #     {'shot_id': shot_id, 'camera_id': self._id, 'is_cali': is_cali},
+        #     self.get_shot_file_path_for_recording(shot_id)
+        # )
+        # self._recorder = CameraRecorder(shot_meta, self._log)
+        self._streamer = CameraStreamer(self._id)
         self._is_recording = True
         self._stop_sign = False
 
     def _stop_recording(self):
-        self._recorder.stop()
-        self._recorder = None
+        # self._recorder.stop()
+        # self._recorder = None
         self._is_recording = False
 
     def stop_recording(self):

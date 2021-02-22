@@ -3,6 +3,7 @@ import os
 import platform
 import glob
 from common.camera_structure.camera_structure import CameraStructure
+from pathlib import Path
 
 
 class SettingManager(CameraStructure):
@@ -133,6 +134,66 @@ class SettingManager(CameraStructure):
 
     def is_disable_deadline(self):
         return self._settings['disable_submit_deadline']
+
+    # stream
+    def get_resolution(self, cmd_arg=False):
+        if cmd_arg:
+            return (
+                str(self.camera_resolution[0]) +
+                'x' +
+                str(self.camera_resolution[1])
+            )
+        return (
+            self.camera_resolution[1],
+            self.camera_resolution[0]
+        )
+
+    def get_stream_path(self, camera_id=None):
+        if camera_id is None:
+            return Path(self._settings['stream_path'])
+        return Path(
+            self._settings['stream_path']
+        ) / str(self.get_camera_number_by_id(camera_id))
+
+    def get_ffmpeg_exe(self):
+        return self._settings['ffmpeg_path']
+
+    def get_dash_sets(self):
+        return self._settings['dash_sets']
+
+    def get_dash_params(self, set_name, scale_width=None):
+        params = []
+        for key, value in self._settings['dash_params'].items():
+            params.append(key)
+            if key in ('-init_seg_name', '-media_seg_name'):
+                params.append(f'{set_name}/{value}')
+            else:
+                params.append(value)
+
+        if scale_width is not None:
+            params += [
+                '-filter:v',
+                f'scale={scale_width}:-2'
+            ]
+
+        params.append(f'{set_name}.mpd')
+
+        return params
+
+    def get_jpg_params(self, set_name):
+        params = []
+        for key, value in self._settings['jpg_params'].items():
+            params += [key, value]
+
+        params.append(f'{set_name}\\%09d.jpg')
+
+        return params
+
+    def is_include_jpg(self):
+        return self._settings['include_jpg']
+
+    def is_stream_master(self, camera_id):
+        return camera_id == self.get_camera_id_by_number(1)
 
 
 class SettingProperty(dict):

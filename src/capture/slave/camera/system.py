@@ -37,7 +37,7 @@ class CameraSystem:
             setting_cameras_count = setting.get_slave_cameras_count()
 
             # 相機數量不對的狀況
-            if current_cameras_count != setting_cameras_count:
+            if current_cameras_count < setting_cameras_count:
                 log.error((
                     "Camera count didn't match setting"
                     f' ({current_cameras_count}/{setting_cameras_count}),'
@@ -75,6 +75,7 @@ class CameraSystem:
     def _build_connectors(self):
         connectors = []
         for i in range(self._camera_list.GetSize()):
+        # for i in range(setting.get_slave_cameras_count()):
             connector = CameraConnector(i, log)
             connector.start()
             connectors.append(connector)

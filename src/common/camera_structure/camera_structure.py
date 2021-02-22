@@ -34,9 +34,9 @@ class CameraStructure:
         return self._yaml['cameras'][camera_id]['number']
 
     def get_camera_id_by_number(self, find_number):
-        for id, value in self._yaml['cameras'].items():
+        for _id, value in self._yaml['cameras'].items():
             if find_number == value['number']:
-                return id
+                return _id
         raise ValueError(f"can't find camera id by number {find_number}")
 
     def get_camera_id_by_position(self, position):
@@ -55,14 +55,14 @@ class CameraStructure:
         raise ValueError(f"can't find position id by number {find_number}")
 
     def get_working_camera_ids(self):
-        if not hasattr(self, '__working_camera_ids'):
-            self.__working_camera_ids = []
+        if not hasattr(self, '_working_camera_ids'):
+            self._working_camera_ids = []
             for camera_number in self.get_camera_numbers_by_position_order():
                 if camera_number is not None:
-                    self.__working_camera_ids.append(
+                    self._working_camera_ids.append(
                         self.get_camera_id_by_number(camera_number)
                     )
-        return self.__working_camera_ids
+        return self._working_camera_ids
 
     def get_camera_numbers_by_position_order(self):
         camera_numbers = []
@@ -72,5 +72,6 @@ class CameraStructure:
 
     def get_position_letters(self):
         return self._yaml['truss_positions'].keys()
+
 
 camera_structure = CameraStructure()  # 單例模式
