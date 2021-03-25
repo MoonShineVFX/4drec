@@ -25,7 +25,7 @@ pyserial==3.4
 PyTurboJPEG==1.4.1
 pytz==2020.1
 pywin32==227
-PyYAML==5.3.1
+PyYAML==5.4
 spinnaker-python==1.27.0.48
 tokenize-rt==4.0.0
 Werkzeug==1.0.1
