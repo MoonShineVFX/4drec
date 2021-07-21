@@ -7,8 +7,6 @@ void setup() {
   pinMode(19, OUTPUT);
   pinMode(LED_BUILTIN, OUTPUT);
   Serial.println("ready!");
-
-  //digitalWrite(A1, HIGH);
 }
 
 void loop() {
