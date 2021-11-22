@@ -1,0 +1,22 @@
+dash_params:
+  '-c:v': 'libx264'
+  '-x264opts': 'keyint=3:min-keyint=3:no-scenecut'
+  '-init_seg_name': 'init.$ext$'
+  '-media_seg_name': '$Number%09d$.$ext$'
+  '-seg_duration': '0.1'
+  '-window_size': '1000'
+  '-f': 'dash'
+
+dash_sets:
+  origin:
+#  medium: 1280
+#  low: 640
+
+jpg_params:
+  '-segment_start_number': '0'
+  '-q:v': '5'
+
+include_jpg: true
+
+stream_path: 'Q:\stream_test\'
+ffmpeg_path: 'Q:\app\ffmpeg\ffmpeg.exe'

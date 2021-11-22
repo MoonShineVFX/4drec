@@ -47,6 +47,7 @@ class CameraConnector(Process):
 
         # 錄製
         self._recorder = None
+        self._start_record_frame = None
 
         # 讀取圖像
         self._shot_loader = None
@@ -147,29 +148,14 @@ class CameraConnector(Process):
             self._current_frame = image_ptr.GetFrameID()
 
             # 判斷是否有開啟即時預覽或錄製，有的情況才執行影像處理
-            if self._is_live_view or self._is_recording:
-                # camera_image = CameraImage(
-                #     image_ptr.GetData(),
-                #     image_ptr.GetWidth(),
-                #     image_ptr.GetHeight()
-                # )
+            if self._is_recording and \
+                    self._start_record_frame is not None and \
+                    self._current_frame >= self._start_record_frame:
+                self._streamer.add_buffer(image_ptr.GetData())
 
-                # if self._is_live_view:
-                #     if not self._is_recording or not setting.is_stop_liveview_when_recording():
-                #         self._live_viewer.set_buffer(camera_image)
-
-                if self._is_recording:
-                    # self._recorder.add_task(
-                    #     self._current_frame,
-                    #     camera_image
-                    # )
-                    self._streamer.add_buffer(image_ptr.GetData())
-
-                    if self._stop_sign:
-                        # if len(self._recorder.get_record_frames()) > 0:
-                        #     self._stop_recording()
-                        self._streamer.stop()
-                        self._stop_recording()
+                if self._stop_sign:
+                    self._streamer.stop()
+                    self._stop_recording()
 
             image_ptr.Release()
 
@@ -233,7 +219,7 @@ class CameraConnector(Process):
 
         return status
 
-    def start_recording(self, shot_id, is_cali):
+    def start_recording(self, start_record_frame):
         """開始錄製
 
         Args:
@@ -241,18 +227,13 @@ class CameraConnector(Process):
 
         """
         self._log.info('Start recording')
-        # shot_meta = CameraShotMeta(
-        #     {'shot_id': shot_id, 'camera_id': self._id, 'is_cali': is_cali},
-        #     self.get_shot_file_path_for_recording(shot_id)
-        # )
-        # self._recorder = CameraRecorder(shot_meta, self._log)
         self._streamer = CameraStreamer(self._id)
+        self._start_record_frame = start_record_frame
         self._is_recording = True
         self._stop_sign = False
 
     def _stop_recording(self):
-        # self._recorder.stop()
-        # self._recorder = None
+        self._start_record_frame = None
         self._is_recording = False
 
     def stop_recording(self):
@@ -347,8 +328,6 @@ class CameraConnector(Process):
         self._log.debug('Stop submitter')
         self._configurator.stop()
         self._log.debug('Stop configurator')
-        # self._live_viewer.stop()
-        # self._log.debug('Stop live viewer')
         self._streamer.stop()
         self._log.debug('Stop streamer')
         self._shot_loader.stop()

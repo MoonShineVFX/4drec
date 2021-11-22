@@ -1,0 +1,44 @@
+host_address:
+  ip: '192.168.100.1'
+  port: 64100
+
+mongodb_address: '192.168.100.1:27017'
+
+camera_resolution: [1920, 1080]
+camera_offset: [264, 484]
+
+frame_rate: 30
+
+slaves:
+  - '4DT-01'
+  - '4DT-02'
+  - '4DT-03'
+  - '4DT-04'
+  - '4DT-05'
+  - '4DT-06'
+  - '4DT-07'
+  - '4DT-08'
+
+record:
+  folder_name: '4drec_data'
+  drives: ['C']
+
+bypass_exist_size: 157200
+
+cameras_per_slave: 3
+
+stop_liveview_when_recording: false
+
+disable_submit_deadline: true
+
+camera_views_per_row:
+  all: 6
+  closeup: 2
+
+camera_rotation: 180
+
+windows_startup:
+  x: 130
+  y: 0
+  w: 1660
+  h: 880

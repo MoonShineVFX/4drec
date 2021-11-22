@@ -84,3 +84,6 @@ class CameraProxy():
 
     def get_shot_image(self, *args, **kwargs):
         self._image_buffers.get_shot_image(*args, **kwargs)
+
+    def get_current_frame(self):
+        return int(self._status['current_frame'])

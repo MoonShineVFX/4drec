@@ -69,7 +69,8 @@ class Message():
             return (
                 self._parms['is_start'],
                 self._parms.get('shot_id', None),
-                self._parms.get('is_cali', None)
+                self._parms.get('is_cali', None),
+                self._parms.get('start_record_frame', None)
             )
         elif self._type is MessageType.GET_SHOT_IMAGE:
             return self._parms

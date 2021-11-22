@@ -24,10 +24,6 @@ class SettingManager(CameraStructure):
             with open(file, 'r') as f:
                 self._settings.update(yaml.load(f, Loader=yaml.FullLoader))
 
-        # resolve setting
-        with open('../resolve/setting.yaml', 'r') as f:
-            self._settings['resolve'] = yaml.load(f, Loader=yaml.FullLoader)
-
         # override setting local
         if os.path.isdir('../settings_local'):
             files = list(glob.glob('../settings_local/*.yaml'))
@@ -191,9 +187,6 @@ class SettingManager(CameraStructure):
 
     def is_include_jpg(self):
         return self._settings['include_jpg']
-
-    def is_stream_master(self, camera_id):
-        return camera_id == self.get_camera_id_by_number(1)
 
 
 class SettingProperty(dict):

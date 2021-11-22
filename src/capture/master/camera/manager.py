@@ -14,6 +14,8 @@ from master.hardware_trigger import hardware_trigger
 from .proxy import CameraProxy
 from .parameter import CameraParameter
 from .report_collector import CameraReportCollector
+from .mpd_modifier import MPDModifier
+from .jpeg_trimmer import JPEGTrimmer
 
 
 class CameraSaveMeta():
@@ -45,6 +47,9 @@ class CameraManager():
         self._is_recording = False  # 錄製中
         self._is_live_view = False  # 預覽中
         self._is_capturing = False
+
+        self._mpd_modifier = None
+        self._jpeg_trimmer = None
 
         self._camera_list = self._build_camera_proxies()  # 相機 proxy 列表
         self._parameters = self._build_parameters()  # 相機可控參數
@@ -296,15 +301,19 @@ class CameraManager():
 
         shot_id = project_manager.current_shot.get_id()
         is_cali = project_manager.current_shot.is_cali()
+        start_record_frame = max([camera.get_current_frame() for camera in self._camera_list.values()]) + 90
 
         # 開啟錄製
         if self._is_recording:
             parms['shot_id'] = shot_id
             parms['is_cali'] = is_cali
+            parms['start_record_frame'] = start_record_frame
             log.info('Start recording: {} / {}'.format(
                 project_manager.current_project,
                 project_manager.current_shot
             ))
+            self._mpd_modifier = MPDModifier()
+            self._jpeg_trimmer = JPEGTrimmer()
         # 關閉錄製
         else:
             log.info('Stop recording')
@@ -318,6 +327,11 @@ class CameraManager():
             self._report_collector.new_record_report_container(
                 shot_id, parameters
             )
+
+            self._mpd_modifier.stop()
+            self._jpeg_trimmer.stop()
+            self._mpd_modifier = None
+            self._jpeg_trimmer = None
 
         message_manager.send_message(
             MessageType.TOGGLE_RECORDING,

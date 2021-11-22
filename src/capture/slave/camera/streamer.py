@@ -4,8 +4,6 @@ import cv2
 import shutil
 import subprocess
 
-from .mpd_modifier import MPDModifier
-
 from utility.mix_thread import MixThread
 from utility.setting import setting
 
@@ -14,10 +12,6 @@ class CameraStreamer(MixThread):
     def __init__(self, camera_id):
         super().__init__()
         self._queue = queue.Queue()
-
-        # mpd
-        self._mpd_modifier = None
-        self._is_stream_master = setting.is_stream_master(camera_id)
 
         self._stream_path = setting.get_stream_path(camera_id)
         if self._stream_path.exists():
@@ -49,16 +43,12 @@ class CameraStreamer(MixThread):
         for set_name, scale_width in setting.get_dash_sets().items():
             (self._stream_path / set_name).mkdir(parents=True, exist_ok=True)
             command_output = setting.get_dash_params(set_name, scale_width)
-            self._process_list.append(
-                subprocess.Popen(
-                    command_input + command_output,
-                    stdin=subprocess.PIPE, stderr=subprocess.STDOUT,
-                    universal_newlines=True,
-                    cwd=cwd_path
-                )
-            )
-            if self._is_stream_master and set_name == 'origin':
-                self._mpd_modifier = MPDModifier(str(self._stream_path / command_output[-1]))
+            self._process_list.append(subprocess.Popen(
+                command_input + command_output,
+                stdin=subprocess.PIPE, stderr=subprocess.STDOUT,
+                universal_newlines=True,
+                cwd=cwd_path
+            ))
 
         if setting.is_include_jpg():
             set_name = 'jpg'
@@ -74,9 +64,6 @@ class CameraStreamer(MixThread):
             )
 
     def _run(self):
-        if self._is_stream_master:
-            self._mpd_modifier.start()
-
         while True:
             image_buffer = self._queue.get()
 
@@ -95,12 +82,11 @@ class CameraStreamer(MixThread):
             process.stdin.close()
             process.wait()
 
-        if self._is_stream_master:
-            self._mpd_modifier.stop()
-
         del self
 
     def stop(self):
+        while not self._queue.empty():
+            self._queue.get()
         self.add_buffer(None)
 
     def add_buffer(self, image_buffer):

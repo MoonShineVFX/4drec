@@ -27,7 +27,7 @@ class LiveViewPanel(LayoutWidget):
 
 class RecordButton(PushButton):
     def __init__(self):
-        super().__init__('  RECORD', 'record', (180, 60))
+        super().__init__('  Streaming', 'record', (180, 60))
         self._is_recording = False
         self.setEnabled(False)
         state.on_changed('recording', self._update)

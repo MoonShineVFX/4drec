@@ -1,1 +1,0 @@
-mapper_from_images ../cali cali_123s6c_raw_cc.yml 0.0893 ARUCO_MIP_36h12 ../cali/out
